@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Inscription Patient</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form (submit)="register()">
+    <ion-item>
+      <ion-label position="floating">Nom Complet</ion-label>
+      <ion-input type="text" [(ngModel)]="name" name="name" required></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Email</ion-label>
+      <ion-input type="email" [(ngModel)]="email" name="email" required></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Mot de passe</ion-label>
+      <ion-input type="password" [(ngModel)]="password" name="password" required></ion-input>
+    </ion-item>
+
+    <ion-button expand="full" type="submit">S'inscrire</ion-button>
+  </form>
+
+  <p>Déjà un compte ? <a (click)="goToLogin()">Se connecter</a></p>
+  <p>Retour <a (click)="goToHome()">Page principale</a></p>
+</ion-content>

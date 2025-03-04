@@ -1,0 +1,22 @@
+<ion-content>
+  <!-- Message de bienvenue -->
+  <div class="welcome-text">
+    <h2>Bienvenue sur MediConnect</h2>
+    <p>Accédez à vos services de santé en toute simplicité.</p>
+  </div>
+
+  <!-- Barre de recherche -->
+  <ion-searchbar [(ngModel)]="searchTerm" placeholder="Rechercher un médecin..."></ion-searchbar>
+
+  <!-- Accès rapide aux fonctionnalités -->
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6" *ngFor="let item of quickAccess">
+        <ion-card (click)="goToPage(item.route)">
+          <ion-icon [name]="item.icon"></ion-icon>
+          <p>{{ item.name }}</p>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

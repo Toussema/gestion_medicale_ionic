@@ -1,0 +1,11 @@
+ion-popover {
+    --width: 200px; /* Largeur du popover */
+    --height: auto; /* Hauteur automatique en fonction du contenu */
+    --max-height: 300px; /* Hauteur maximale */
+    --border-radius: 8px; /* Coins arrondis */
+    --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); /* Ombre */
+  }
+  
+  ion-popover::part(content) {
+    padding: 8px; /* Espacement intérieur */
+  }
