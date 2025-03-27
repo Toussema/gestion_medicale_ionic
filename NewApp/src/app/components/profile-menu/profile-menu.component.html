@@ -1,0 +1,30 @@
+<ion-content>
+  <ion-list>
+    <!-- Afficher le nom et le rôle de l'utilisateur -->
+    <ion-item *ngIf="isLoggedIn && user">
+      <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+      <ion-label>
+        <h2>{{ user.name }}</h2>
+        <p>{{ user.role }}</p>
+      </ion-label>
+    </ion-item>
+
+    <!-- Bouton Se déconnecter (visible si connecté) -->
+    <ion-item *ngIf="isLoggedIn" button (click)="logout()">
+      <ion-icon name="log-out-outline" slot="start"></ion-icon>
+      <ion-label>Se déconnecter</ion-label>
+    </ion-item>
+
+    <!-- Bouton S'inscrire (visible si non connecté) -->
+    <ion-item *ngIf="!isLoggedIn" button (click)="navigateTo('/register')">
+      <ion-icon name="person-add-outline" slot="start"></ion-icon>
+      <ion-label>S'inscrire</ion-label>
+    </ion-item>
+
+    <!-- Bouton Se connecter (visible si non connecté) -->
+    <ion-item *ngIf="!isLoggedIn" button (click)="navigateTo('/login')">
+      <ion-icon name="log-in-outline" slot="start"></ion-icon>
+      <ion-label>Se connecter</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

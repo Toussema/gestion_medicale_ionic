@@ -9,17 +9,22 @@ import { AppRoutingModule } from './app-routing.module';
 
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
-import { NavbarComponent } from './components/navbar/navbar.component'; // ✅ Import correct
+import { HeaderComponent } from './components/header/header.component';
+import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
+import { TabsComponent } from './components/tabs/tabs.component';
+import { AuthService } from './services/auth.service'; // Importer AuthService
+
+
 
 
 
 
 
 @NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule, IonicModule, NavbarComponent],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, provideHttpClient(withInterceptorsFromDi())],
+  declarations: [AppComponent, ],
+  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule, IonicModule, HeaderComponent, TabsComponent, ProfileMenuComponent ],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, provideHttpClient(withInterceptorsFromDi()), AuthService],
   bootstrap: [AppComponent],
-  exports: [NavbarComponent], // Permet de l'utiliser dans d'autres pages
+  exports: [HeaderComponent, TabsComponent], // Permet de l'utiliser dans d'autres pages
 })
 export class AppModule {}

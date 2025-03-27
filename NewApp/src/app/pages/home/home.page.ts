@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AppComponent } from 'src/app/app.component';
-import { NavbarComponent } from 'src/app/components/navbar/navbar.component';
 
 
 

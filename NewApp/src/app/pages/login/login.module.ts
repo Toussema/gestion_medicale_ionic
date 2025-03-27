@@ -7,7 +7,6 @@ import { IonicModule } from '@ionic/angular';
 import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
-import { NavbarComponent } from "../../components/navbar/navbar.component";
 
 @NgModule({
   imports: [
@@ -15,7 +14,6 @@ import { NavbarComponent } from "../../components/navbar/navbar.component";
     FormsModule,
     IonicModule,
     LoginPageRoutingModule,
-    NavbarComponent
 ],
   declarations: [LoginPage]
 })

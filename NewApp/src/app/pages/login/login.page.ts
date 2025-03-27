@@ -20,14 +20,14 @@ export class LoginPage {
     if (!this.email || !this.password) {
       alert('Veuillez remplir tous les champs.');
       return;
-    }
+    } 
 
     this.isLoading = true; // Début du chargement
 
     this.authService.login(this.email, this.password).subscribe(
       (response) => {
         console.log('Réponse backend:', response); // 🔍 Vérification
-        this.isLoading = false; // Fin du chargement
+        this.isLoading = false; // Fin du chargement 
         
 
         if (response.token && response.user) {

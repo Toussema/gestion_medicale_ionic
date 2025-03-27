@@ -6,3 +6,20 @@ home.page.ts:
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
+
+
+// appel d'un component angular dans les pages ionic (cas d'un component affiché dans toutes les pages => appelé dans app.component) :
++ app.module.ts:
+import { MyComponent } from "./components/my-component/my-component.component"; // ✅ Import correct
+fil imports wel exports nzido MyComponent
+
++ my-component.ts:
+import { IonicModule } from '@ionic/angular';
+imports: [IonicModule],  // Ajoute cette ligne
+
+
++ app.component.html:
+<!-- essai d'un composant -->
+<app-my-component title="Bienvenue sur Ionic 7"></app-my-component>
+ou bien dans <ion-content></ion-content>
+

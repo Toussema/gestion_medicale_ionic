@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 from datetime import datetime
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:8100"}})  # Autoriser uniquement les requêtes depuis http://localhost:8100
+CORS(app, resources={r"/login": {"origins": "http://localhost:8100", "supports_credentials": True}})  # Autoriser uniquement les requêtes depuis http://localhost:8100
 
 # Configuration de la base MongoDB
 app.config["MONGO_URI"] = "mongodb://localhost:27017/medical_app"
@@ -23,7 +23,8 @@ jwt = JWTManager(app)
 
 bcrypt = Bcrypt(app)
 
-users = mongo.db.users  # Collection des utilisateurs
+patients = mongo.db.patient  # Collection des patients
+medecins = mongo.db.medecin  # Collection des médecins
 rendezvous = mongo.db.rendezvous  # Collection des rendez-vous
 
 # Route d'inscription (seuls les patients peuvent s'inscrire)
@@ -33,30 +34,40 @@ def register():
     if not data.get("email") or not data.get("password") or not data.get("name"):
         return jsonify({"message": "Nom complet, email et mot de passe requis"}), 400
 
-    if users.find_one({"email": data["email"]}):
+    if patients.find_one({"email": data["email"]}) or medecins.find_one({"email": data["email"]}):
         return jsonify({"message": "Utilisateur déjà existant"}), 400
 
     hashed_pw = bcrypt.generate_password_hash(data["password"]).decode('utf-8')
-    user_data = {
+    patient_data = {
         "name": data["name"],  # ✅ Stocker le nom complet
         "email": data["email"],
         "password": hashed_pw,
         "role": "patient"
     }
-    users.insert_one(user_data)
+    patients.insert_one(patient_data)
     return jsonify({"message": "Inscription réussie"}), 201
 
 # Route de connexion (patients et médecins)
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    user = users.find_one({"email": data["email"]})
+    print("Données reçues :", data)  # Debugging
+
+    user = patients.find_one({"email": data["email"]}) or medecins.find_one({"email": data["email"]})
 
     if not user:
         return jsonify({"message": "Email ou mot de passe incorrect"}), 401
 
     if not bcrypt.check_password_hash(user["password"], data["password"]):
         return jsonify({"message": "Email ou mot de passe incorrect"}), 401
+    # Déterminer le nom complet en fonction du rôle
+    if user["role"] == "patient":
+        full_name = user.get("name", "Utilisateur")  # Utiliser "name" pour les patients
+    else:
+        # Utiliser "nom" et "prenom" pour les médecins
+        full_name = f"{user.get('nom', '')} {user.get('prenom', '')}".strip()
+        if not full_name:  # Si aucun nom n'est trouvé
+            full_name = "Médecin"
 
     access_token = create_access_token(identity={"email": user["email"], "role": user["role"]})
 
@@ -69,6 +80,26 @@ def login():
             "role": user["role"]
         }
     }), 200
+    
+    
+    
+# Récupérer la liste des médecins
+@app.route('/medecins', methods=['GET'])
+def get_medecins():
+    medecins_list = list(medecins.find({}, {"password": 0}))
+    for medecin in medecins_list:
+        medecin["_id"] = str(medecin["_id"])
+    return jsonify(medecins_list), 200
+
+# Récupérer les détails d'un médecin
+@app.route('/medecins/<id>', methods=['GET'])
+def get_medecin(id):
+    medecin = medecins.find_one({"_id": ObjectId(id)}, {"password": 0})
+    if medecin:
+        medecin["_id"] = str(medecin["_id"])
+        return jsonify(medecin), 200
+    else:
+        return jsonify({"message": "Médecin non trouvé"}), 404
 
 # Route pour créer un rendez-vous (protégée par JWT)
 @app.route('/rendezvous', methods=['POST'])
