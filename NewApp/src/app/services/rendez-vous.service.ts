@@ -13,21 +13,46 @@ export class RendezVousService {
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
-  /**
-   * Récupère les rendez-vous d'un patient.
-   */
-  getRendezVousByPatient(patientId: string): Observable<any> {
-    const token = this.authService.getToken(); // Récupérer le token JWT
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.apiUrl}/rendezvous/patient`,{headers});
+
+  private getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
   }
 
-  /**
-   * Crée un nouveau rendez-vous.
-   */
-  createRendezVous(rendezVous: any): Observable<any> {
-    const token = this.authService.getToken(); // Récupérer le token JWT
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`); // Ajouter le token dans l'en-tête
-    return this.http.post(`${this.apiUrl}/rendezvous`, rendezVous, { headers });
+  getDisponibilites(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/medecins/disponibilites`, {
+      headers: this.getHeaders()
+    });
   }
+  
+  updateDisponibilites(disponibilites: any): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/medecins/disponibilites`,
+      disponibilites,  // Envoie directement l'objet
+      { headers: this.getHeaders() }
+    );
+  }
+
+      // Pour tous les utilisateurs
+  getRendezVous(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/rendezvous`);
+  }
+
+  // Pour les patients
+  getCreneauxDisponibles(medecinId: string, date: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/medecins/${medecinId}/creneaux?date=${date}`);
+  }
+
+
+  prendreRendezVous(rdv: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/rendezvous`, rdv);
+  }
+
+  annulerRendezVous(rdvId: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/rendezvous/${rdvId}/annuler`, {});
+  }
+
+
 }

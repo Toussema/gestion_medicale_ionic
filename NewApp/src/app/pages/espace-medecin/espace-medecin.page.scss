@@ -1,0 +1,18 @@
+/* Style pour la section disponibilités */
+ion-card-header {
+    background: var(--ion-color-light);
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  
+  ion-item-divider {
+    --background: #f8f9fa;
+    font-weight: bold;
+  }
+  
+  /* Style pour les créneaux */
+  ion-item {
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+  }

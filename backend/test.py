@@ -1,8 +1,7 @@
 from app import app, medecins, bcrypt
 with app.app_context():
     medecins.insert_one({
-        "nom": "TRIFA",
-        "prenom": "MOHAMED",
+        "name": "Mohamed",
         "sexe": "M",
         "etab": "CABINET MEDICAL INDIVIDUEL",
         "specialite": "UROLOGIE",

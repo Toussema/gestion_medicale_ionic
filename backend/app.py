@@ -7,27 +7,27 @@ from bson.objectid import ObjectId
 from datetime import datetime
 
 app = Flask(__name__)
-CORS(app, resources={r"/login": {"origins": "http://localhost:8100", "supports_credentials": True}})  # Autoriser uniquement les requêtes depuis http://localhost:8100
+CORS(app, resources={r"/*": {"origins": "http://localhost:8100", "supports_credentials": True}})
 
 # Configuration de la base MongoDB
 app.config["MONGO_URI"] = "mongodb://localhost:27017/medical_app"
 mongo = PyMongo(app)
 try:
-    mongo.cx.server_info()  # Vérifie la connexion à MongoDB
+    mongo.cx.server_info()
     print("✅ Connexion à MongoDB réussie")
 except Exception as e:
     print(f"❌ Erreur de connexion à MongoDB : {e}")
 
-app.config["JWT_SECRET_KEY"] = "secret_key_super_securisee"  # Remplace par une clé forte
+app.config["JWT_SECRET_KEY"] = "secret_key_super_securisee"
 jwt = JWTManager(app)
-
 bcrypt = Bcrypt(app)
 
-patients = mongo.db.patient  # Collection des patients
-medecins = mongo.db.medecin  # Collection des médecins
-rendezvous = mongo.db.rendezvous  # Collection des rendez-vous
+patients = mongo.db.patient
+medecins = mongo.db.medecin
+disponibilites = mongo.db.disponibilite
+rendezvous = mongo.db.rendezvous
 
-# Route d'inscription (seuls les patients peuvent s'inscrire)
+# Route d'inscription (patients)
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
@@ -39,7 +39,7 @@ def register():
 
     hashed_pw = bcrypt.generate_password_hash(data["password"]).decode('utf-8')
     patient_data = {
-        "name": data["name"],  # ✅ Stocker le nom complet
+        "name": data["name"],
         "email": data["email"],
         "password": hashed_pw,
         "role": "patient"
@@ -47,43 +47,59 @@ def register():
     patients.insert_one(patient_data)
     return jsonify({"message": "Inscription réussie"}), 201
 
-# Route de connexion (patients et médecins)
+# Route de connexion
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    print("Données reçues :", data)  # Debugging
+    try:
+        data = request.get_json()
+        if not data or 'email' not in data or 'password' not in data:
+            return jsonify({"message": "Email et mot de passe requis"}), 400
 
-    user = patients.find_one({"email": data["email"]}) or medecins.find_one({"email": data["email"]})
+        user = patients.find_one({"email": data["email"]}) or medecins.find_one({"email": data["email"]})
+        if not user:
+            return jsonify({"message": "Identifiants incorrects"}), 401
 
-    if not user:
-        return jsonify({"message": "Email ou mot de passe incorrect"}), 401
+        if not bcrypt.check_password_hash(user["password"], data["password"]):
+            return jsonify({"message": "Identifiants incorrects"}), 401
 
-    if not bcrypt.check_password_hash(user["password"], data["password"]):
-        return jsonify({"message": "Email ou mot de passe incorrect"}), 401
-    # Déterminer le nom complet en fonction du rôle
-    if user["role"] == "patient":
-        full_name = user.get("name", "Utilisateur")  # Utiliser "name" pour les patients
-    else:
-        # Utiliser "nom" et "prenom" pour les médecins
-        full_name = f"{user.get('nom', '')} {user.get('prenom', '')}".strip()
-        if not full_name:  # Si aucun nom n'est trouvé
-            full_name = "Médecin"
+        # Gestion du nom selon le rôle
+        full_name = user["name"] if user["role"] == "patient" else user.get("name", "Médecin")
 
-    access_token = create_access_token(identity={"email": user["email"], "role": user["role"]})
-
-    return jsonify({
-        "message": "Connexion réussie",
-        "token": access_token,
-        "user": {
-            "name": user["name"],  # ✅ Envoyer le nom complet
+        token_data = {
             "email": user["email"],
-            "role": user["role"]
+            "role": user["role"],
+            "id": str(user["_id"])
         }
-    }), 200
-    
-    
-    
-# Récupérer la liste des médecins
+        access_token = create_access_token(identity=token_data)
+
+        # Réponse avec toutes les infos nécessaires
+        response_data = {
+            "message": "Connexion réussie",
+            "token": access_token,
+            "user": {
+                "id": str(user["_id"]),
+                "name": full_name,
+                "email": user["email"],
+                "role": user["role"]
+            }
+        }
+
+        # Ajout des infos supplémentaires pour les médecins
+        if user["role"] == "medecin":
+            response_data["user"].update({
+                "specialite": user.get("specialite", ""),
+                "adresse": user.get("adresse", ""),
+                "tel": user.get("tel", ""),
+                "gsm": user.get("gsm", "")
+            })
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(f"Erreur lors de la connexion : {str(e)}")
+        return jsonify({"message": "Erreur interne du serveur"}), 500
+
+# Routes pour les médecins
 @app.route('/medecins', methods=['GET'])
 def get_medecins():
     medecins_list = list(medecins.find({}, {"password": 0}))
@@ -91,73 +107,91 @@ def get_medecins():
         medecin["_id"] = str(medecin["_id"])
     return jsonify(medecins_list), 200
 
-# Récupérer les détails d'un médecin
 @app.route('/medecins/<id>', methods=['GET'])
 def get_medecin(id):
     medecin = medecins.find_one({"_id": ObjectId(id)}, {"password": 0})
     if medecin:
         medecin["_id"] = str(medecin["_id"])
         return jsonify(medecin), 200
+    return jsonify({"message": "Médecin non trouvé"}), 404
+
+@app.route('/medecins/disponibilites', methods=['GET', 'POST'])
+@jwt_required()
+def gestion_disponibilites():  # Renommez la fonction pour refléter les deux actions
+    current_user = get_jwt_identity()
+    if current_user["role"] != "medecin":
+        return jsonify({"message": "Accès refusé"}), 403
+
+    medecin_id = ObjectId(current_user["id"])
+
+    if request.method == 'POST':
+        return save_disponibilites(medecin_id)  # Nouvelle méthode pour POST
     else:
-        return jsonify({"message": "Médecin non trouvé"}), 404
+        return get_disponibilites(medecin_id)  # Méthode existante pour GET
 
-# Route pour créer un rendez-vous (protégée par JWT)
-@app.route('/rendezvous', methods=['POST'])
-@jwt_required()  # Nécessite un token JWT valide
-def create_rendezvous():
-    data = request.json
-    current_user = get_jwt_identity()  # Récupère l'utilisateur actuel à partir du token JWT
+def get_disponibilites(medecin_id):
+    """Récupère les disponibilités"""
+    doc = mongo.db.disponibilite.find_one({"medecinId": medecin_id})
+    
+    if not doc:
+        # Retourne une structure vide avec tous les jours
+        jours_vides = {
+            "lundi": [], "mardi": [], "mercredi": [], 
+            "jeudi": [], "vendredi": [], "samedi": []
+        }
+        return jsonify(jours_vides), 200
+    
+    return jsonify(doc.get("horaires", {})), 200
 
-    if not data.get("medecinId") or not data.get("date") or not data.get("heure"):
-        return jsonify({"message": "Tous les champs sont requis"}), 400
-
-    # Vérifier que la date et l'heure sont valides
+def save_disponibilites(medecin_id):
+    """Sauvegarde les nouvelles disponibilités"""
     try:
-        datetime.strptime(data["date"], "%Y-%m-%d")  # Format de date attendu : YYYY-MM-DD
-        datetime.strptime(data["heure"], "%H:%M")  # Format d'heure attendu : HH:MM
-    except ValueError:
-        return jsonify({"message": "Date ou heure invalide"}), 400
+        data = request.get_json()
+        
+        # Validation minimale
+        if not data or not isinstance(data.get("horaires"), dict):
+            return jsonify({"message": "Le champ 'horaires' (object) est requis"}), 422
 
-    # Vérifier les conflits de rendez-vous
-    existing_rendezvous = rendezvous.find_one({
-        "medecinId": data["medecinId"],
-        "date": data["date"],
-        "heure": data["heure"]
-    })
-    if existing_rendezvous:
-        return jsonify({"message": "Un rendez-vous existe déjà à cette date et heure"}), 400
+        # Validation des créneaux
+        for jour, creneaux in data["horaires"].items():
+            if not isinstance(creneaux, list):
+                return jsonify({"message": f"Le jour '{jour}' doit contenir un tableau de créneaux"}), 422
+                
+            for creneau in creneaux:
+                try:
+                    datetime.strptime(creneau["debut"], "%H:%M")
+                    datetime.strptime(creneau["fin"], "%H:%M")
+                except (ValueError, KeyError):
+                    return jsonify({"message": f"Format HH:MM invalide pour {jour}"}), 422
 
-    rendezvous_data = {
-        "patientId": current_user["email"],  # Utiliser l'email du patient comme identifiant
-        "medecinId": data["medecinId"],
-        "date": data["date"],
-        "heure": data["heure"],
-        "status": "en_attente"  # Statut par défaut
-    }
+        # Upsert dans MongoDB
+        mongo.db.disponiblite.update_one(
+            {"medecinId": medecin_id},
+            {"$set": {"horaires": data["horaires"]}},
+            upsert=True
+        )
+        
+        return jsonify({"message": "Disponibilités mises à jour"}), 200
 
-    # Insérer le rendez-vous dans la collection
-    rendezvous_id = rendezvous.insert_one(rendezvous_data).inserted_id
-    return jsonify({"message": "Rendez-vous créé avec succès", "id": str(rendezvous_id)}), 201
+    except Exception as e:
+        print(f"Erreur: {str(e)}")
+        return jsonify({"message": "Erreur interne du serveur"}), 500
 
-# Route pour récupérer les rendez-vous d'un patient (protégée par JWT)
-@app.route('/rendezvous/patient', methods=['GET'])
-@jwt_required()  # Nécessite un token JWT valide
-def get_rendezvous_by_patient():
-    current_user = get_jwt_identity()  # Récupère l'utilisateur actuel à partir du token JWT
-    patient_rendezvous = list(rendezvous.find({"patientId": current_user["email"]}))
-    for rdv in patient_rendezvous:
-        rdv["_id"] = str(rdv["_id"])  # Convertir ObjectId en string
-    return jsonify(patient_rendezvous), 200
+# Nouvelle route pour les rendez-vous
+@app.route('/rendezvous', methods=['GET'])
+@jwt_required()
+def get_rendezvous():
+    current_user = get_jwt_identity()
+    
+    if current_user["role"] == "medecin":
+        rdvs = list(rendezvous.find({"medecinId": current_user["email"]}))
+    else:
+        rdvs = list(rendezvous.find({"patientId": current_user["email"]}))
 
-# Route pour récupérer les rendez-vous d'un médecin (protégée par JWT)
-@app.route('/rendezvous/medecin', methods=['GET'])
-@jwt_required()  # Nécessite un token JWT valide
-def get_rendezvous_by_medecin():
-    current_user = get_jwt_identity()  # Récupère l'utilisateur actuel à partir du token JWT
-    medecin_rendezvous = list(rendezvous.find({"medecinId": current_user["email"]}))
-    for rdv in medecin_rendezvous:
-        rdv["_id"] = str(rdv["_id"])  # Convertir ObjectId en string
-    return jsonify(medecin_rendezvous), 200
+    for rdv in rdvs:
+        rdv["_id"] = str(rdv["_id"])
+    
+    return jsonify(rdvs), 200
 
 @app.route('/')
 def home():

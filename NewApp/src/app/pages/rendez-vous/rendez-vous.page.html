@@ -1,74 +1,21 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Rendez-vous</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-header title="Mes Rendez-vous"></app-header>
 
 <ion-content>
-  <ion-toolbar>
-    <ion-title>Rendez-vous</ion-title>
-  </ion-toolbar>
-  <!-- Contenu spécifique au rôle -->
-  <div *ngIf="userRole === 'medecin'">
-    <h2>Mes rendez-vous aujourd'hui</h2>
-    <ion-list>
-      <ion-item *ngFor="let rdv of rendezVous">
-        <ion-label>
-          {{ rdv.heure }} - {{ rdv.patient }}
-        </ion-label>
-      </ion-item>
-    </ion-list>
-    <ion-button expand="full" (click)="definirDisponibilites()">
-      Définir mes disponibilités
-    </ion-button>
-  </div>
-
-  <div *ngIf="userRole === 'patient'">
-  <!-- Formulaire de prise de rendez-vous -->
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Prendre un rendez-vous</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-item>
-        <ion-label position="floating">Médecin</ion-label>
-        <ion-select [(ngModel)]="selectedMedecin" placeholder="Sélectionner un médecin">
-          <ion-select-option *ngFor="let medecin of medecins" [value]="medecin.id">
-            {{ medecin.nom }}
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="floating">Date</ion-label>
-        <ion-datetime displayFormat="DD/MM/YYYY" [(ngModel)]="selectedDate"></ion-datetime>
-      </ion-item>
-      
-      <ion-item>
-        <ion-label position="floating">Heure</ion-label>
-        <ion-datetime displayFormat="HH:mm" [(ngModel)]="selectedTime"></ion-datetime>
-      </ion-item>
-
-      <ion-button expand="full" (click)="prendreRendezVous()">Prendre un rendez-vous</ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- Liste des rendez-vous pris -->
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Mes rendez-vous</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list>
-        <ion-item *ngFor="let rdv of rendezVous">
-          <ion-label>
-            <h2>{{ rdv.medecin }}</h2>
-            <p>{{ rdv.date }} à {{ rdv.heure }}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </ion-card-content>
-  </ion-card>    
-    
-  </div>
+  <ion-list>
+    <ion-item *ngFor="let rdv of rendezVous">
+      <ion-label>
+        <h2>{{ rdv.date | date:'EEEE d MMMM yyyy' }}</h2>
+        <p>{{ rdv.heure }} - Durée: {{ rdv.duree }} minutes</p>
+        <p *ngIf="!isMedecin">Médecin: {{ rdv.medecinName }}</p>
+        <p *ngIf="isMedecin">Patient: {{ rdv.patientName }}</p>
+        <p>Motif: {{ rdv.motif }}</p>
+      </ion-label>
+      <ion-badge [color]="rdv.status === 'confirmé' ? 'success' : 'warning'">
+        {{ rdv.status }}
+      </ion-badge>
+      <ion-button fill="clear" (click)="annulerRendezVous(rdv._id)" *ngIf="rdv.status === 'confirmé'">
+        <ion-icon name="close-circle"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
 </ion-content>
