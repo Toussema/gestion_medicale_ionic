@@ -44,12 +44,7 @@ const routes: Routes = [
     canActivate: [AuthGuard], // Appliquer le gardien
 
   },
-  {
-    path: 'notifications',
-    loadChildren: () => import('./pages/notifications/notifications.module').then( m => m.NotificationsPageModule),
-    canActivate: [AuthGuard], // Appliquer le gardien
 
-  },
   {
     path: 'parametres',
     loadChildren: () => import('./pages/parametres/parametres.module').then( m => m.ParametresPageModule),

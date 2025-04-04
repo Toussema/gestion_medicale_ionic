@@ -1,0 +1,17 @@
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let notif of notifications" [class.read]="notif.read">
+      <ion-label>
+        <h3>{{ notif.message }}</h3>
+        <p>{{ notif.created_at | date:'medium' }}</p>
+      </ion-label>
+      <ion-button slot="end" fill="clear" (click)="markAsRead(notif.id)" *ngIf="!notif.read">
+        <ion-icon name="checkmark-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-item *ngIf="notifications.length === 0">
+      <ion-label>Aucune notification</ion-label>
+    </ion-item>
+  </ion-list>
+  <ion-button expand="block" (click)="closePopover()">Fermer</ion-button>
+</ion-content>

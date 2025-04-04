@@ -1,0 +1,9 @@
+ion-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 12px;
+  }
+  ion-button {
+    position: relative;
+  }

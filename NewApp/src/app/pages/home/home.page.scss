@@ -1,68 +1,231 @@
+/* Import d'une police moderne et lisible */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+
+
+/* Styles généraux */
 ion-content {
-  --background: #f5f5f5;
-  text-align: center;
+  --background: var(--ion-background-color);
+  font-family: var(--ion-font-family);
 }
 
+/* Header */
+.header-toolbar {
+  --background: var(--ion-gradient-primary);
+  --color: var(--ion-color-primary-contrast);
+}
+
+.header-toolbar ion-title {
+  font-size: var(--ion-font-size-large);
+  font-weight: var(--ion-font-weight-medium);
+  letter-spacing: 0.5px;
+}
+
+.profile-button {
+  --color: var(--ion-color-primary-contrast);
+  font-size: var(--ion-font-size-medium);
+  font-weight: var(--ion-font-weight-regular);
+  text-transform: capitalize;
+}
+
+/* Section bienvenue */
 .welcome-text {
-  padding: 20px;
-  h2 {
-    color: #2c3e50;
-  }
-  p {
-    color: #7f8c8d;
-  }
-}
-
-ion-card {
   text-align: center;
-  padding: 15px;
-  border-radius: 15px;
-  background: white;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  ion-icon {
-    font-size: 3rem;
-    color: #007bff;
+  padding: 20px 0;
+  background: var(--ion-gradient-primary);
+  color: var(--ion-color-primary-contrast); /* Changé de rgb(70, 163, 36) pour cohérence */
+  border-radius: 0 0 var(--ion-border-radius-large) var(--ion-border-radius-large);
+  margin-bottom: 20px;
+  animation: fadeIn 0.5s ease-in-out;
+
+  h2 {
+    margin: 0;
+    font-size: var(--ion-font-size-xlarge);
+    font-weight: var(--ion-font-weight-medium);
+    letter-spacing: 1px;
   }
+
   p {
-    margin-top: 5px;
-    font-size: 1rem;
-    font-weight: bold;
-    color: #2c3e50;
+    margin: 5px 0 0;
+    font-size: var(--ion-font-size-medium);
+    font-weight: var(--ion-font-weight-light);
+    opacity: 0.9;
   }
 }
 
-.auth-buttons {
-  padding: 20px;
-  ion-button {
-    margin-top: 10px;
+/* Barre de recherche */
+.custom-searchbar {
+  --border-radius: var(--ion-border-radius-medium);
+  --box-shadow: var(--ion-shadow-light);
+  --background: var(--ion-card-background);
+  margin: 0 10px 20px 10px;
+  --color: var(--ion-text-color);
+  font-size: var(--ion-font-size-medium);
+  font-weight: var(--ion-font-weight-regular);
+  transition: var(--ion-transition-default);
+
+  &:hover {
+    --box-shadow: var(--ion-shadow-hover);
   }
 }
 
-
-/* Style pour les icônes des cartes d'actions rapides */
-.quick-access-icon {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
+/* Liste des médecins */
+.medecin-list {
+  padding: 0 10px;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
-/* Style pour la section des notifications récentes */
-.recent-notifications {
+.medecin-card {
+  --background: var(--ion-card-background);
+  border-radius: var(--ion-border-radius-medium);
+  margin-bottom: 20px;
+  box-shadow: var(--ion-shadow-medium);
+  padding: 15px;
+  transition: var(--ion-transition-default);
+
+  &:hover {
+    transform: var(--ion-scale-hover);
+    box-shadow: var(--ion-shadow-hover);
+  }
+}
+
+.medecin-content {
+  display: flex;
+  flex-direction: column; /* Toujours en colonne pour placer le bouton en bas */
+  gap: 15px;
+}
+
+.medecin-details {
+  flex: 1;
+}
+
+/* En-tête */
+.medecin-header {
+  margin-bottom: 15px;
+
+  h2 {
+    color: var(--ion-color-primary);
+    font-size: var(--ion-font-size-xlarge);
+    font-weight: var(--ion-font-weight-medium);
+    margin: 0;
+  }
+
+  .specialite {
+    color: var(--ion-text-muted);
+    font-size: var(--ion-font-size-medium);
+    font-weight: var(--ion-font-weight-regular);
+  }
+}
+
+/* Informations générales */
+.medecin-info {
+  margin-bottom: 20px;
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    color: var(--ion-text-color);
+    font-size: var(--ion-font-size-medium);
+    font-weight: var(--ion-font-weight-regular);
+    flex-wrap: wrap;
+    gap: 5px;
+
+    ion-icon {
+      margin-right: 10px;
+      color: var(--ion-color-primary);
+      font-size: var(--ion-font-size-large);
+    }
+
+    span {
+      font-weight: var(--ion-font-weight-medium);
+      color: var(--ion-text-color);
+      min-width: 90px;
+    }
+  }
+}
+
+/* Section des disponibilités */
+.dispo-section {
   margin-top: 20px;
-  padding: 10px;
+
+  h3 {
+    color: var(--ion-color-primary);
+    font-size: var(--ion-font-size-large);
+    font-weight: var(--ion-font-weight-medium);
+    margin: 0 0 10px 0;
+    border-bottom: 1px solid var(--ion-border-color);
+    padding-bottom: 5px;
+  }
 }
 
-.recent-notifications h3 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
+.dispo-list {
+  padding: 0;
 }
 
-/* Style pour les boutons d'authentification */
-.auth-buttons {
-  margin-top: 20px;
-  padding: 0 16px;
+.dispo-item {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
-.auth-buttons ion-button {
-  margin-bottom: 10px;
+.dispo-day {
+  font-weight: var(--ion-font-weight-medium);
+  color: var(--ion-color-primary);
+  min-width: 90px;
+  font-size: var(--ion-font-size-medium);
+}
+
+.dispo-time {
+  color: var(--ion-text-muted);
+  font-weight: var(--ion-font-weight-regular);
+  font-size: var(--ion-font-size-small);
+}
+
+.creneau {
+  color: var(--ion-text-muted);
+  font-size: var(--ion-font-size-small);
+}
+
+/* Bouton RDV */
+.rdv-button {
+  --background: var(--ion-color-primary);
+  --border-radius: var(--ion-border-radius-small);
+  --padding-start: 20px;
+  --padding-end: 20px;
+  --color: var(--ion-color-primary-contrast);
+  font-size: var(--ion-font-size-medium);
+  font-weight: var(--ion-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  height: 40px;
+  width: 100%;
+  max-width: 200px;
+  margin: 15px auto 0; /* Centré en bas */
+  display: block;
+  animation: pulse 2s infinite;
+  box-shadow: var(--ion-shadow-light);
+  transition: var(--ion-transition-default);
+
+  &:hover {
+    --background: var(--ion-color-primary-shade);
+    box-shadow: var(--ion-shadow-hover);
+    transform: var(--ion-scale-hover);
+  }
+}
+
+/* Media query pour écrans plus larges (desktop) */
+@media (min-width: 768px) {
+  .medecin-content {
+    flex-direction: column; /* Toujours en colonne pour garder le bouton en bas */
+  }
+
+  .medecin-details {
+    padding-right: 0; /* Pas besoin de padding à droite */
+  }
 }

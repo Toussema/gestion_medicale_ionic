@@ -1,58 +1,41 @@
 import { Injectable } from '@angular/core';
-
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuthService } from './auth.service'; // Importez AuthService pour récupérer le token
+import { AuthService } from './auth.service';
 
-
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class RendezVousService {
-  private apiUrl = 'http://127.0.0.1:5000'; // URL de votre API Flask
+    private apiUrl = 'http://127.0.0.1:5000';
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+    constructor(private http: HttpClient, private authService: AuthService) {}
+
+    private getHeaders(): HttpHeaders {
+        return new HttpHeaders({ 'Authorization': `Bearer ${this.authService.getToken()}` });
+    }
+
+    getDisponibilites(): Observable<any> {
+        return this.http.get(`${this.apiUrl}/disponibilites`, { headers: this.getHeaders() });
+    }
+
+    saveDisponibilites(horaires: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/disponibilites`, horaires, { headers: this.getHeaders() });
+    }
+
+    getRendezVous(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/rendezvous`, { headers: this.getHeaders() });
+    }
+
+    prendreRendezVous(rdv: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/rendezvous`, rdv, { headers: this.getHeaders() });
+    }
+
+    annulerRendezVous(rdvId: string): Observable<any> {
+        return this.http.post(`${this.apiUrl}/rendezvous/${rdvId}/annuler`, {}, { headers: this.getHeaders() });
+    }
 
 
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    // Nouvelle méthode pour récupérer la liste des médecins
+    getMedecins(): Observable<any[]> {
+      return this.http.get<any[]>(`${this.apiUrl}/medecins`);  // Pas besoin de token pour cette route publique
   }
-
-  getDisponibilites(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/medecins/disponibilites`, {
-      headers: this.getHeaders()
-    });
-  }
-  
-  updateDisponibilites(disponibilites: any): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/medecins/disponibilites`,
-      disponibilites,  // Envoie directement l'objet
-      { headers: this.getHeaders() }
-    );
-  }
-
-      // Pour tous les utilisateurs
-  getRendezVous(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/rendezvous`);
-  }
-
-  // Pour les patients
-  getCreneauxDisponibles(medecinId: string, date: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/medecins/${medecinId}/creneaux?date=${date}`);
-  }
-
-
-  prendreRendezVous(rdv: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/rendezvous`, rdv);
-  }
-
-  annulerRendezVous(rdvId: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/rendezvous/${rdvId}/annuler`, {});
-  }
-
-
 }

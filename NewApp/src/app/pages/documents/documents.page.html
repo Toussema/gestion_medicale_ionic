@@ -1,13 +1,46 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>documents</ion-title>
+    <ion-title>Documents</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">documents</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <ion-card *ngIf="user.role === 'patient'">
+    <ion-card-header>
+      <ion-card-title>Envoyer un document</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="stacked">Titre</ion-label>
+        <ion-input [(ngModel)]="titre"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Médecin</ion-label>
+        <ion-select [(ngModel)]="selectedMedecinId" placeholder="Choisir un médecin">
+          <ion-select-option *ngFor="let medecin of medecins" [value]="medecin.id">
+            {{ medecin.name }} ({{ medecin.specialite || 'Généraliste' }})
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <input type="file" (change)="onFileSelected($event)" />
+      </ion-item>
+      <ion-button expand="block" (click)="uploadDocument()">Envoyer</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list>
+    <ion-item *ngFor="let doc of documents">
+      <ion-label>
+        <h2>{{ doc.titre }}</h2>
+        <p>Date: {{ doc.date_envoi }}</p>
+        <p>Statut: {{ doc.statut }}</p>
+        <p *ngIf="doc.remarques">Remarques: {{ doc.remarques }}</p>
+      </ion-label>
+      <ion-button slot="end" (click)="downloadDocument(doc.id)">Télécharger</ion-button>
+      <ion-button slot="end" *ngIf="user.role === 'medecin'" (click)="annotateDocument(doc)">
+        Annoter
+      </ion-button>
+    </ion-item>
+  </ion-list>
 </ion-content>

@@ -2,8 +2,13 @@
   <ion-toolbar>
     <ion-title>MediConnect</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="onNotificationsClick($event)">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <ion-badge color="danger" *ngIf="unreadCount > 0">{{ unreadCount }}</ion-badge>
+      </ion-button>
       <ion-button (click)="onProfileButtonClick($event)">
         <ion-icon name="person-circle-outline"></ion-icon>
+        {{ isLoggedIn && user?.name ? user?.name : '' }}
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

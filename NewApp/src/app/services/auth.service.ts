@@ -93,4 +93,9 @@ export class AuthService {
 
     this.router.navigate(['/home']); // Retour à l'accueil après déconnexion
   }
+
+  // Nouvelle méthode pour gérer l'expiration du token
+  handleUnauthorized() {
+    this.logout();
+  }
 }

@@ -1,2 +1,160 @@
-// For information on how to create your own theme, please see:
-// http://ionicframework.com/docs/theming/
+:root {
+  /* Couleurs principales */
+  --ion-color-primary: #007bff; /* Bleu médical */
+  --ion-color-primary-rgb: 0, 123, 255;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #006fe6; /* Teinte plus foncée pour survol */
+  --ion-color-primary-tint: #1a88ff; /* Teinte plus claire pour effets */
+
+  /* Couleurs secondaires */
+  --ion-color-secondary: #e9f1fa;
+  --ion-color-secondary-rgb: 233, 241, 250;
+  --ion-color-secondary-contrast: #333333;
+  --ion-color-secondary-contrast-rgb: 51, 51, 51;
+  --ion-color-secondary-shade: #d1dbe9; /* Teinte plus foncée */
+  --ion-color-secondary-tint: #f5f8fc; /* Teinte plus claire */
+
+  /* Couleurs d'accentuation */
+  --ion-color-accent: #00c4cc; /* Cyan pour les dégradés et accents */
+  --ion-color-accent-rgb: 0, 196, 204;
+  --ion-color-accent-contrast: #ffffff;
+
+  /* Couleurs de texte */
+  --ion-text-color: #333333;
+  --ion-text-muted: #666666; /* Texte secondaire */
+  --ion-text-light: #999999; /* Texte clair pour sous-titres */
+
+  /* Couleurs de fond */
+  --ion-background-color: #e9f1fa; /* Fond clair */
+  --ion-background-color-dark: #d1dbe9; /* Fond légèrement plus sombre */
+  --ion-card-background: #ffffff; /* Fond des cartes */
+
+  /* Ombres */
+  --ion-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre légère */
+  --ion-shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15); /* Ombre moyenne */
+  --ion-shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.2); /* Ombre au survol */
+
+  /* Transitions et animations */
+  --ion-transition-default: all 0.3s ease-in-out; /* Transition fluide */
+  --ion-transition-fast: all 0.2s ease-in-out; /* Transition rapide */
+  --ion-scale-hover: scale(1.02); /* Effet de zoom au survol */
+
+  /* Bordures et rayons */
+  --ion-border-radius-small: 8px; /* Rayon pour petits éléments */
+  --ion-border-radius-medium: 12px; /* Rayon pour cartes */
+  --ion-border-radius-large: 20px; /* Rayon pour sections principales */
+  --ion-border-color: #e0e0e0; /* Couleur des bordures */
+
+  /* Polices */
+  --ion-font-family: 'Roboto', sans-serif;
+  --ion-font-size-small: 0.9rem;
+  --ion-font-size-medium: 1rem;
+  --ion-font-size-large: 1.2rem;
+  --ion-font-size-xlarge: 1.4rem;
+  --ion-font-weight-light: 300;
+  --ion-font-weight-regular: 400;
+  --ion-font-weight-medium: 500;
+  --ion-font-weight-bold: 700;
+
+  /* Dégradés */
+  --ion-gradient-primary: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-accent));
+  --ion-gradient-secondary: linear-gradient(135deg, var(--ion-color-secondary), var(--ion-color-secondary-tint));
+
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+    }
+    70% {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+  }
+}
+
+/* Styles pour les composants Ionic */
+ion-toolbar {
+  --background: var(--ion-gradient-primary); /* Dégradé pour la toolbar */
+  --color: var(--ion-color-primary-contrast);
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --box-shadow: var(--ion-shadow-light);
+}
+
+ion-button {
+  --color: var(--ion-color-primary-contrast);
+  --background: var(--ion-color-primary);
+  --border-radius: var(--ion-border-radius-small);
+  --transition: var(--ion-transition-default);
+  --box-shadow: var(--ion-shadow-light);
+
+  &:hover {
+    --background: var(--ion-color-primary-shade);
+    --box-shadow: var(--ion-shadow-hover);
+    transform: var(--ion-scale-hover);
+  }
+
+  &.rdv-button {
+    animation: pulse 2s infinite; /* Animation de pulsation pour attirer l’attention */
+  }
+}
+
+ion-searchbar {
+  --background: var(--ion-card-background);
+  --border-radius: var(--ion-border-radius-medium);
+  --box-shadow: var(--ion-shadow-light);
+  --color: var(--ion-text-color);
+  --transition: var(--ion-transition-default);
+
+  &:hover {
+    --box-shadow: var(--ion-shadow-hover);
+  }
+}
+
+ion-list {
+  animation: fadeIn 0.5s ease-in-out; /* Animation d’apparition pour la liste */
+}
+
+ion-item {
+  --background: var(--ion-card-background);
+  --border-radius: var(--ion-border-radius-medium);
+  --box-shadow: var(--ion-shadow-medium);
+  --transition: var(--ion-transition-default);
+
+  &:hover {
+    --box-shadow: var(--ion-shadow-hover);
+    transform: var(--ion-scale-hover);
+  }
+}
+
+/* Mode sombre (optionnel) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-color-primary: #1a88ff;
+    --ion-color-primary-shade: #147be6;
+    --ion-color-secondary: #2c3e50;
+    --ion-color-secondary-tint: #34495e;
+    --ion-background-color: #1e2a38;
+    --ion-card-background: #263544;
+    --ion-text-color: #e0e0e0;
+    --ion-text-muted: #b0b0b0;
+    --ion-border-color: #3a4a5c;
+  }
+}

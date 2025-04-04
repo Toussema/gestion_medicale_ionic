@@ -1,21 +1,36 @@
-<app-header title="Mes Rendez-vous"></app-header>
+<ion-header>
+  <ion-toolbar>
+      <ion-title>Mes Rendez-vous</ion-title>
+  </ion-toolbar>
+</ion-header>
 
 <ion-content>
   <ion-list>
-    <ion-item *ngFor="let rdv of rendezVous">
-      <ion-label>
-        <h2>{{ rdv.date | date:'EEEE d MMMM yyyy' }}</h2>
-        <p>{{ rdv.heure }} - Durée: {{ rdv.duree }} minutes</p>
-        <p *ngIf="!isMedecin">Médecin: {{ rdv.medecinName }}</p>
-        <p *ngIf="isMedecin">Patient: {{ rdv.patientName }}</p>
-        <p>Motif: {{ rdv.motif }}</p>
-      </ion-label>
-      <ion-badge [color]="rdv.status === 'confirmé' ? 'success' : 'warning'">
-        {{ rdv.status }}
-      </ion-badge>
-      <ion-button fill="clear" (click)="annulerRendezVous(rdv._id)" *ngIf="rdv.status === 'confirmé'">
-        <ion-icon name="close-circle"></ion-icon>
-      </ion-button>
-    </ion-item>
+      <!-- Conteneur pour boucler sur les rendez-vous -->
+      <ng-container *ngFor="let rdv of rendezVous">
+          <!-- Affichage pour les patients -->
+          <ion-item *ngIf="userRole === 'patient'">
+              <ion-label>
+                  <h2>{{ rdv.medecinName }} ({{ rdv.medecinSpecialite }})</h2>
+                  <p>Adresse: {{ rdv.medecinAdresse }}</p>
+                  <p>{{ rdv.jour | titlecase }}: {{ rdv.debut }} - {{ rdv.fin }} ({{ rdv.statut }})</p>
+              </ion-label>
+              <ion-button slot="end" color="danger" (click)="annulerRdv(rdv._id)" *ngIf="rdv.statut !== 'annulé'">
+                  Annuler
+              </ion-button>
+          </ion-item>
+
+          <!-- Affichage pour les médecins -->
+          <ion-item *ngIf="userRole === 'medecin'">
+              <ion-label>
+                  <h2>{{ rdv.patientName }}</h2>
+                  <p>Email: {{ rdv.patientEmail }}</p>
+                  <p>{{ rdv.jour | titlecase }}: {{ rdv.debut }} - {{ rdv.fin }} ({{ rdv.statut }})</p>
+              </ion-label>
+              <ion-button slot="end" color="danger" (click)="annulerRdv(rdv._id)" *ngIf="rdv.statut !== 'annulé'">
+                  Annuler
+              </ion-button>
+          </ion-item>
+      </ng-container>
   </ion-list>
 </ion-content>

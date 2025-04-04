@@ -9,6 +9,12 @@
       </ion-label>
     </ion-item>
 
+    <!-- Section Espace Personnel (visible si connecté) -->
+    <ion-item *ngIf="isLoggedIn" button (click)="goToPersonalSpace()">
+      <ion-icon name="home-outline" slot="start"></ion-icon>
+      <ion-label>Espace Personnel</ion-label>
+    </ion-item>
+
     <!-- Bouton Se déconnecter (visible si connecté) -->
     <ion-item *ngIf="isLoggedIn" button (click)="logout()">
       <ion-icon name="log-out-outline" slot="start"></ion-icon>

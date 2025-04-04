@@ -1,13 +1,63 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>parametres</ion-title>
+    <ion-title>Paramètres</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">parametres</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Vos informations</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <!-- Champs communs (patient et médecin) -->
+        <ion-item>
+          <ion-label position="floating">Nom</ion-label>
+          <ion-input [(ngModel)]="userData.name" [disabled]="!isEditing" placeholder="Entrez votre nom"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input [(ngModel)]="userData.email" [disabled]="!isEditing" placeholder="Entrez votre email"></ion-input>
+        </ion-item>
+
+        <!-- Champs spécifiques au médecin -->
+        <ion-item *ngIf="user?.role === 'medecin'">
+          <ion-label position="floating">Spécialité</ion-label>
+          <ion-input [(ngModel)]="userData.specialite" [disabled]="!isEditing" placeholder="Entrez votre spécialité"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="user?.role === 'medecin'">
+          <ion-label position="floating">Adresse</ion-label>
+          <ion-input [(ngModel)]="userData.adresse" [disabled]="!isEditing" placeholder="Entrez votre adresse"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="user?.role === 'medecin'">
+          <ion-label position="floating">Téléphone</ion-label>
+          <ion-input [(ngModel)]="userData.tel" [disabled]="!isEditing" placeholder="Entrez votre téléphone"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="user?.role === 'medecin'">
+          <ion-label position="floating">GSM</ion-label>
+          <ion-input [(ngModel)]="userData.gsm" [disabled]="!isEditing" placeholder="Entrez votre GSM"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="user?.role === 'medecin'">
+          <ion-label position="floating">Sexe</ion-label>
+          <ion-input [(ngModel)]="userData.sexe" [disabled]="!isEditing" placeholder="Entrez votre sexe"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="user?.role === 'medecin'">
+          <ion-label position="floating">Établissement</ion-label>
+          <ion-input [(ngModel)]="userData.etab" [disabled]="!isEditing" placeholder="Entrez votre établissement"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="user?.role === 'medecin'">
+          <ion-label position="floating">Faculté</ion-label>
+          <ion-input [(ngModel)]="userData.faculte" [disabled]="!isEditing" placeholder="Entrez votre faculté"></ion-input>
+        </ion-item>
+
+        <!-- Boutons -->
+        <ion-button *ngIf="!isEditing" expand="block" (click)="toggleEdit()">Modifier</ion-button>
+        <div *ngIf="isEditing">
+          <ion-button expand="block" color="success" (click)="saveChanges()">Enregistrer</ion-button>
+          <ion-button expand="block" color="danger" (click)="toggleEdit()">Annuler</ion-button>
+        </div>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
 </ion-content>
