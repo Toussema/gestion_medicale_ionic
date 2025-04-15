@@ -50,6 +50,11 @@ const routes: Routes = [
     loadChildren: () => import('./pages/parametres/parametres.module').then( m => m.ParametresPageModule),
     canActivate: [AuthGuard], // Appliquer le gardien
   },
+  {
+    path: 'notifications-page',
+    loadChildren: () => import('./pages/notifications-page/notifications-page.module').then( m => m.NotificationsPagePageModule),
+    canActivate: [AuthGuard], // Appliquer le gardien
+  },
 ];
 
 @NgModule({

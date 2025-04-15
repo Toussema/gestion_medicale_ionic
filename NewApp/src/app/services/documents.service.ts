@@ -36,12 +36,17 @@ export class DocumentsService {
     return this.http.put(`${this.apiUrl}/documents/${docId}/annotate`, { remarques }, { headers: this.getHeaders() });
   }
 
-  // Nouvelle méthode pour récupérer les médecins
+  // Méthode existante pour tous les médecins (gardée pour d'autres usages)
   getMedecins(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/medecins`);
   }
 
-  // Nouvelles méthodes pour les notifications
+  // Nouvelle méthode pour les médecins liés par rendez-vous
+  getPatientMedecins(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/patient/medecins`, { headers: this.getHeaders() });
+  }
+
+  // Méthodes pour les notifications (inchangées)
   getNotifications(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/notifications`, { headers: this.getHeaders() });
   }
@@ -50,11 +55,9 @@ export class DocumentsService {
     return this.http.put(`${this.apiUrl}/notifications/${notifId}/read`, {}, { headers: this.getHeaders() });
   }
 
-  // Nouvelle méthode pour compter les notifications non lues
   getUnreadNotificationsCount(): Observable<number> {
     return this.getNotifications().pipe(
       map(notifications => notifications.filter(n => !n.read).length)
     );
   }
-
-} 
+}

@@ -1,3 +1,13 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Notifications</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="closePopover()" title="Fermer">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 <ion-content>
   <ion-list>
     <ion-item *ngFor="let notif of notifications" [class.read]="notif.read">
@@ -5,13 +15,25 @@
         <h3>{{ notif.message }}</h3>
         <p>{{ notif.created_at | date:'medium' }}</p>
       </ion-label>
-      <ion-button slot="end" fill="clear" (click)="markAsRead(notif.id)" *ngIf="!notif.read">
-        <ion-icon name="checkmark-outline"></ion-icon>
+
+      <!-- Bouton "Marquer comme lue" -->
+      <ion-button slot="end" fill="clear" (click)="markAsRead(notif.id)" *ngIf="!notif.read" title="Marquer comme lue">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+      </ion-button>
+
+      <!-- Bouton "Supprimer" -->
+      <ion-button slot="end" fill="clear" color="danger" (click)="removeNotification(notif.id)" title="Supprimer la notification">
+        <ion-icon name="trash-outline"></ion-icon>
       </ion-button>
     </ion-item>
+
+    <ion-button expand="block" fill="clear" (click)="navigateTo('/notifications-page')">
+      Afficher tout
+      <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+    </ion-button>    
+
     <ion-item *ngIf="notifications.length === 0">
       <ion-label>Aucune notification</ion-label>
     </ion-item>
   </ion-list>
-  <ion-button expand="block" (click)="closePopover()">Fermer</ion-button>
 </ion-content>

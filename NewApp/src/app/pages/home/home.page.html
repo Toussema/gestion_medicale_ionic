@@ -4,22 +4,63 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content [fullscreen]="true" class="ion-padding">
   <!-- Message de bienvenue -->
   <div class="welcome-text">
     <h2>Bienvenue sur MediConnect</h2>
     <p>Accédez à vos services de santé en toute simplicité.</p>
   </div>
 
-  <!-- Barre de recherche fonctionnelle -->
-  <ion-searchbar 
-    [(ngModel)]="searchTerm" 
-    placeholder="Rechercher un médecin..." 
-    (ionInput)="filterMedecins()"
-    class="custom-searchbar">
-  </ion-searchbar>
+<!-- Formulaire de filtres -->
+<ion-card class="filter-card">
+  <ion-card-header (click)="toggleFilters()">
+    <ion-card-title>🔍 Rechercher un médecin</ion-card-title>
+    <ion-icon 
+      slot="end" 
+      [name]="showFilters ? 'chevron-up-outline' : 'chevron-down-outline'"
+      class="toggle-icon">
+    </ion-icon>
+  </ion-card-header>
+  
+  <ion-card-content *ngIf="showFilters" class="filter-content">
+    <ion-item class="filter-item" lines="none">
+      <ion-label position="stacked">Recherche générale</ion-label>
+      <ion-input 
+        [(ngModel)]="filters.term" 
+        (ionInput)="filterMedecins()" 
+        placeholder="Nom, email, etc."
+        clearInput>
+      </ion-input>
+    </ion-item>
+    
+    <ion-item class="filter-item" lines="none">
+      <ion-label position="stacked">Spécialité</ion-label>
+      <ion-input [(ngModel)]="filters.specialite" (ionInput)="filterMedecins()" placeholder="Cardiologie, Généraliste, etc."></ion-input>
+    </ion-item>
+    
+    <ion-item class="filter-item" lines="none">
+      <ion-label position="stacked">Localisation</ion-label>
+      <ion-input 
+        [(ngModel)]="filters.adresse" 
+        (ionInput)="filterMedecins()" 
+        placeholder="Ville, rue, etc."
+        clearInput>
+      </ion-input>
+    </ion-item>
+    
+    <div class="filter-buttons">
+      <ion-button expand="block" color="primary" shape="round" (click)="filterMedecins()">
+        Appliquer
+      </ion-button>
+      <ion-button expand="block" color="medium" fill="outline" shape="round" (click)="resetFilters()">
+        Réinitialiser
+      </ion-button>
+    </div>
+  </ion-card-content>
+</ion-card>
 
-  <!-- Liste des médecins avec toutes les informations -->
+
+  <!-- Liste des médecins -->
   <ion-list class="medecin-list">
     <ion-item *ngFor="let medecin of medecins" class="medecin-card">
       <div class="medecin-content">
@@ -29,7 +70,6 @@
           </div>
           <div class="medecin-info">
             <p class="info-item"><ion-icon name="mail-outline"></ion-icon> <span>Email:</span> {{ medecin.email }}</p>
-            <!-- Autres champs -->
             <p class="info-item"><ion-icon name="male-female-outline"></ion-icon> <span>Sexe:</span> {{ medecin.sexe || 'Non spécifié' }}</p>
             <p class="info-item"><ion-icon name="business-outline"></ion-icon> <span>Établissement:</span> {{ medecin.etab || 'Non spécifié' }}</p>
             <p class="info-item"><ion-icon name="school-outline"></ion-icon> <span>Faculté:</span> {{ medecin.faculte || 'Non spécifiée' }}</p>
@@ -37,7 +77,10 @@
             <p class="info-item"><ion-icon name="call-outline"></ion-icon> <span>Téléphone:</span> {{ medecin.tel || 'Non spécifié' }}</p>
             <p class="info-item"><ion-icon name="phone-portrait-outline"></ion-icon> <span>GSM:</span> {{ medecin.gsm || 'Non spécifié' }}</p>
           </div>
-          <div class="dispo-section">
+          <ion-button expand="block" (click)="toggleDisponibilites(medecin)">
+            {{ medecin.showDisponibilites ? 'Masquer' : 'Disponibilités' }}
+          </ion-button>
+          <div class="dispo-section" *ngIf="medecin.showDisponibilites">
             <h3>Disponibilités</h3>
             <ion-list class="dispo-list">
               <ion-item *ngFor="let jour of validDays" class="dispo-item">

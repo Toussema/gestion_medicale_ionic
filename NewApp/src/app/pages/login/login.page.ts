@@ -35,15 +35,8 @@ export class LoginPage {
           this.authService.saveUser(response.user); // Sauvegarde de l'utilisateur avec son rôle
 
           alert(response.message || 'Connexion réussie !');
+          this.router.navigate(['/home']);
 
-          // Redirection selon le rôle
-          if (response.user.role === 'patient') {
-            this.router.navigate(['/espace-patient']);
-          } else if (response.user.role === 'medecin') {
-            this.router.navigate(['/espace-medecin']);
-          } else {
-            this.router.navigate(['/home']); // Par défaut
-          }
         } else {
           alert('Erreur de connexion. Veuillez réessayer.');
         }

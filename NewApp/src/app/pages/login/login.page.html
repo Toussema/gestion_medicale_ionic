@@ -4,7 +4,11 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="welcome-text">
+    <h2>Bienvenue sur MediConnect</h2>
+    <p>Accédez à vos services de santé en toute simplicité.</p>
+  </div>
   <form (submit)="login()">
     <ion-item>
       <ion-label position="floating">Email</ion-label>

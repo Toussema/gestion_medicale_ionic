@@ -3,6 +3,9 @@ import { AuthService } from '../../services/auth.service';
 import { DocumentsService } from '../../services/documents.service';
 import { AlertController } from '@ionic/angular';
 import { saveAs } from 'file-saver';
+import { IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-documents',
@@ -15,8 +18,8 @@ export class DocumentsPage implements OnInit {
   documents: any[] = [];
   selectedFile: File | null = null;
   titre: string = '';
-  selectedMedecinId: string = ''; // Remplace medecinId
-  medecins: any[] = []; // Liste des médecins
+  selectedMedecinId: string = '';
+  medecins: any[] = [];
 
   constructor(
     private authService: AuthService,
@@ -27,7 +30,7 @@ export class DocumentsPage implements OnInit {
   ngOnInit() {
     this.user = this.authService.getUser();
     this.loadDocuments();
-    this.loadMedecins(); // Charger les médecins
+    this.loadMedecins();
   }
 
   loadDocuments() {
@@ -37,17 +40,20 @@ export class DocumentsPage implements OnInit {
 
     request.subscribe({
       next: (data) => (this.documents = data),
-      error: (err) => console.error(err),
+      error: (err) => console.error('Erreur chargement documents:', err),
     });
   }
 
   loadMedecins() {
-    this.documentsService.getMedecins().subscribe({
-      next: (data) => {
-        this.medecins = data;
-      },
-      error: (err) => console.error(err),
-    });
+    if (this.user.role === 'patient') {
+      this.documentsService.getPatientMedecins().subscribe({
+        next: (data) => {
+          this.medecins = data;
+          console.log('Médecins avec rendez-vous:', data);
+        },
+        error: (err) => console.error('Erreur chargement médecins:', err),
+      });
+    }
   }
 
   onFileSelected(event: any) {
@@ -67,18 +73,32 @@ export class DocumentsPage implements OnInit {
 
     const formData = new FormData();
     formData.append('patient_id', this.user.id);
-    formData.append('medecin_id', this.selectedMedecinId); // Utiliser l’ID sélectionné
+    formData.append('medecin_id', this.selectedMedecinId);
     formData.append('titre', this.titre);
     formData.append('fichier', this.selectedFile);
 
     this.documentsService.uploadDocument(formData).subscribe({
-      next: () => {
+      next: async () => {
         this.loadDocuments();
         this.titre = '';
         this.selectedFile = null;
         this.selectedMedecinId = '';
+        const alert = await this.alertCtrl.create({
+          header: 'Succès',
+          message: 'Document envoyé avec succès.',
+          buttons: ['OK'],
+        });
+        await alert.present();
       },
-      error: (err) => console.error(err),
+      error: async (err) => {
+        console.error('Erreur envoi document:', err);
+        const alert = await this.alertCtrl.create({
+          header: 'Erreur',
+          message: 'Erreur lors de l’envoi du document.',
+          buttons: ['OK'],
+        });
+        await alert.present();
+      },
     });
   }
 
@@ -88,7 +108,7 @@ export class DocumentsPage implements OnInit {
         const doc = this.documents.find(d => d.id === docId);
         saveAs(blob, doc.titre);
       },
-      error: (err) => console.error(err),
+      error: (err) => console.error('Erreur téléchargement document:', err),
     });
   }
 
@@ -103,7 +123,7 @@ export class DocumentsPage implements OnInit {
           handler: (data) => {
             this.documentsService.annotateDocument(doc.id, data.remarques).subscribe({
               next: () => this.loadDocuments(),
-              error: (err) => console.error(err),
+              error: (err) => console.error('Erreur annotation document:', err),
             });
           },
         },

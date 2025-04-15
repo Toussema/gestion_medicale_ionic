@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { RendezVousService } from '../../services/rendez-vous.service';
-import { AppComponent } from 'src/app/app.component';
 import { AlertController, PopoverController } from '@ionic/angular';
 
 @Component({
@@ -15,26 +14,19 @@ export class HomePage implements OnInit {
   isLoggedIn = false;
   userName: string = '';
   userRole: string = '';
-  searchTerm: string = '';
   medecins: any[] = [];
   allMedecins: any[] = [];
-
-  // Liste des jours valides
-  readonly validDays = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-
-  quickAccess = [
-    { name: 'Rechercher un médecin', icon: 'search-outline', route: '/search' },
-    { name: 'Prendre un RDV', icon: 'calendar-outline', route: '/appointments' },
-    { name: 'Mes documents', icon: 'document-text-outline', route: '/documents' },
-    { name: 'Profil', icon: 'person-outline', route: '/profile' },
-    { name: 'Paramètres', icon: 'settings-outline', route: '/settings' },
-  ];
+  validDays = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  filters = {
+    specialite: '',
+    adresse: '',
+    term: ''
+  };
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private rdvService: RendezVousService,
-    private appComponent: AppComponent,
     private alertCtrl: AlertController,
     private popoverController: PopoverController
   ) {}
@@ -66,49 +58,54 @@ export class HomePage implements OnInit {
   loadMedecins() {
     this.rdvService.getMedecins().subscribe({
       next: (data: any[]) => {
-        this.allMedecins = data || [];
+        this.allMedecins = data.map(medecin => ({
+          ...medecin,
+          showDisponibilites: false
+        }));
         this.medecins = [...this.allMedecins];
       },
       error: (err) => console.error('Erreur lors du chargement des médecins:', err)
     });
   }
-
+  showFilters = false;
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
   filterMedecins() {
-    const term = this.searchTerm.toLowerCase().trim();
-    if (!term) {
+    const params = {
+      specialite: this.filters.specialite.trim(),
+      adresse: this.filters.adresse.trim(),
+      term: this.filters.term.trim()
+    };
+
+    // Si aucun filtre n'est rempli, afficher tous les médecins
+    if (!params.specialite && !params.adresse && !params.term) {
       this.medecins = [...this.allMedecins];
       return;
     }
 
-    this.medecins = this.allMedecins.filter(medecin => {
-      const name = (medecin.name || '').toString().toLowerCase();
-      const specialite = (medecin.specialite || '').toString().toLowerCase();
-      const email = (medecin.email || '').toString().toLowerCase();
-      const sexe = (medecin.sexe || '').toString().toLowerCase();
-      const etab = (medecin.etab || '').toString().toLowerCase();
-      const faculte = (medecin.faculte || '').toString().toLowerCase();
-      const adresse = (medecin.adresse || '').toString().toLowerCase();
-      const tel = (medecin.tel || '').toString().toLowerCase();
-      const gsm = (medecin.gsm || '').toString().toLowerCase();
-
-      return (
-        name.includes(term) ||
-        specialite.includes(term) ||
-        email.includes(term) ||
-        sexe.includes(term) ||
-        etab.includes(term) ||
-        faculte.includes(term) ||
-        adresse.includes(term) ||
-        tel.includes(term) ||
-        gsm.includes(term)
-      );
+    // Appeler la route de recherche avec les paramètres
+    this.rdvService.searchMedecins(params).subscribe({
+      next: (data: any[]) => {
+        this.medecins = data.map(medecin => ({
+          ...medecin,
+          showDisponibilites: false
+        }));
+      },
+      error: (err) => {
+        console.error('Erreur lors du filtrage des médecins:', err);
+        this.showAlert('Erreur', 'Impossible de filtrer les médecins.');
+      }
     });
   }
 
+  resetFilters() {
+    this.filters = { specialite: '', adresse: '', term: '' };
+    this.medecins = [...this.allMedecins];
+  }
 
-
-  goToPage(route: string) {
-    this.router.navigate([route]);
+  toggleDisponibilites(medecin: any) {
+    medecin.showDisponibilites = !medecin.showDisponibilites;
   }
 
   async prendreRendezVous(medecinId: string) {
@@ -121,7 +118,7 @@ export class HomePage implements OnInit {
       await alert.present();
       return;
     }
-
+  
     const medecin = this.medecins.find(m => m.id === medecinId);
     if (!medecin) {
       const alert = await this.alertCtrl.create({
@@ -132,125 +129,175 @@ export class HomePage implements OnInit {
       await alert.present();
       return;
     }
-
-    const alert = await this.alertCtrl.create({
-      header: 'Prendre un rendez-vous',
-      inputs: [
-        {
-          name: 'jour',
-          type: 'text',
-          placeholder: 'Jour (ex: lundi)'
-        },
-        {
-          name: 'debut',
-          type: 'time',
-          placeholder: 'Heure de début'
-        },
-        {
-          name: 'fin',
-          type: 'time',
-          placeholder: 'Heure de fin'
-        }
-      ],
+  
+    const joursDisponibles = Object.keys(medecin.disponibilites).filter(
+      jour => this.validDays.includes(jour) && medecin.disponibilites[jour]?.length > 0
+    );
+  
+    if (joursDisponibles.length === 0) {
+      const alert = await this.alertCtrl.create({
+        header: 'Erreur',
+        message: 'Aucune disponibilité pour ce médecin.',
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
+  
+    const jourAlert = await this.alertCtrl.create({
+      header: 'Choisir un jour',
+      inputs: joursDisponibles.map(jour => ({
+        name: 'jour',
+        type: 'radio',
+        label: jour.charAt(0).toUpperCase() + jour.slice(1),
+        value: jour
+      })),
       buttons: [
         { text: 'Annuler', role: 'cancel' },
         {
-          text: 'Confirmer',
-          handler: async (data: any) => {
-            const jour = data.jour.toLowerCase().trim();
-            const debut = data.debut;
-            const fin = data.fin;
-
-            // Validation des champs
-            if (!jour || !debut || !fin) {
+          text: 'Suivant',
+          handler: async (selectedJour: string) => {
+            if (!selectedJour) {
               const errorAlert = await this.alertCtrl.create({
                 header: 'Erreur',
-                message: 'Tous les champs doivent être remplis.',
+                message: 'Veuillez sélectionner un jour.',
                 buttons: ['OK']
               });
               await errorAlert.present();
               return false;
             }
-
-            // Validation du jour
-            if (!this.validDays.includes(jour)) {
+  
+            const creneaux = medecin.disponibilites[selectedJour] || [];
+            console.log(`Créneaux bruts pour ${selectedJour}:`, creneaux);
+  
+            // Filtrer les créneaux valides
+            const creneauxValides = creneaux.filter(
+              (creneau: any) => creneau.debut && creneau.fin && /^\d{1,2}:\d{2}$/.test(creneau.debut) && /^\d{1,2}:\d{2}$/.test(creneau.fin)
+            );
+  
+            if (creneauxValides.length === 0) {
               const errorAlert = await this.alertCtrl.create({
                 header: 'Erreur',
-                message: 'Le jour doit être valide (lundi, mardi, mercredi, jeudi, vendredi, samedi).',
+                message: `Aucun créneau valide disponible pour ${selectedJour}.`,
                 buttons: ['OK']
               });
               await errorAlert.present();
               return false;
             }
-
-            // Vérification des disponibilités du médecin
-            const disponibilites = medecin.disponibilites[jour] || [];
-            if (disponibilites.length === 0) {
-              const errorAlert = await this.alertCtrl.create({
-                header: 'Erreur',
-                message: `Le médecin n'est pas disponible le ${jour}.`,
-                buttons: ['OK']
-              });
-              await errorAlert.present();
-              return false;
-            }
-
-            const isAvailable = disponibilites.some((creneau: any) => {
-              const creneauDebut = this.timeToMinutes(creneau.debut);
-              const creneauFin = this.timeToMinutes(creneau.fin);
-              const rdvDebut = this.timeToMinutes(debut);
-              const rdvFin = this.timeToMinutes(fin);
-
-              return rdvDebut >= creneauDebut && rdvFin <= creneauFin && rdvDebut < rdvFin;
+  
+            const creneauAlert = await this.alertCtrl.create({
+              header: `Créneaux pour ${selectedJour.charAt(0).toUpperCase() + selectedJour.slice(1)}`,
+              inputs: creneauxValides.map((creneau: any, index: number) => {
+                const value = `${creneau.debut}|${creneau.fin}`; // Utiliser '|' comme séparateur
+                console.log(`Créneau affiché: ${creneau.debut} - ${creneau.fin}, value: ${value}`);
+                return {
+                  name: 'creneau',
+                  type: 'radio',
+                  label: `${creneau.debut} - ${creneau.fin}`,
+                  value: value
+                };
+              }),
+              buttons: [
+                { text: 'Annuler', role: 'cancel' },
+                {
+                  text: 'Confirmer',
+                  handler: async (selectedCreneau: string) => {
+                    console.log('SelectedCreneau:', selectedCreneau);
+  
+                    if (!selectedCreneau) {
+                      const errorAlert = await this.alertCtrl.create({
+                        header: 'Erreur',
+                        message: 'Veuillez sélectionner un créneau.',
+                        buttons: ['OK']
+                      });
+                      await errorAlert.present();
+                      return false;
+                    }
+  
+                    // Valider et normaliser les horaires
+                    const times = selectedCreneau.split('|'); // Diviser sur '|'
+                    if (times.length !== 2) {
+                      console.error('Invalid times split:', times);
+                      const errorAlert = await this.alertCtrl.create({
+                        header: 'Erreur',
+                        message: 'Créneau invalide sélectionné.',
+                        buttons: ['OK']
+                      });
+                      await errorAlert.present();
+                      return false;
+                    }
+  
+                    const [debutRaw, finRaw] = times;
+                    const debutMatch = debutRaw.match(/^(\d{1,2}):(\d{2})$/);
+                    const finMatch = finRaw.match(/^(\d{1,2}):(\d{2})$/);
+  
+                    if (!debutMatch || !finMatch) {
+                      console.error('Regex failed - debutRaw:', debutRaw, 'finRaw:', finRaw);
+                      const errorAlert = await this.alertCtrl.create({
+                        header: 'Erreur',
+                        message: 'Format horaire invalide.',
+                        buttons: ['OK']
+                      });
+                      await errorAlert.present();
+                      return false;
+                    }
+  
+                    const debut = `${parseInt(debutMatch[1]).toString().padStart(2, '0')}:${debutMatch[2]}`;
+                    const fin = `${parseInt(finMatch[1]).toString().padStart(2, '0')}:${finMatch[2]}`;
+  
+                    const rdv = {
+                      medecinId: medecinId,
+                      jour: selectedJour.toLowerCase(),
+                      debut: debut,
+                      fin: fin
+                    };
+  
+                    console.log('Envoi de la requête rendez-vous:', rdv);
+  
+                    this.rdvService.prendreRendezVous(rdv).subscribe({
+                      next: async () => {
+                        const successAlert = await this.alertCtrl.create({
+                          header: 'Succès',
+                          message: 'Rendez-vous pris avec succès !',
+                          buttons: ['OK']
+                        });
+                        await successAlert.present();
+                        this.loadMedecins();
+                      },
+                      error: async (err: any) => {
+                        console.error('Erreur lors de la prise de rendez-vous:', err);
+                        const errorAlert = await this.alertCtrl.create({
+                          header: 'Erreur',
+                          message: err.error?.message || 'Erreur lors de la prise de rendez-vous.',
+                          buttons: ['OK']
+                        });
+                        await errorAlert.present();
+                      }
+                    });
+                    return true;
+                  }
+                }
+              ]
             });
-
-            if (!isAvailable) {
-              const errorAlert = await this.alertCtrl.create({
-                header: 'Erreur',
-                message: `Le créneau ${debut}-${fin} n'est pas disponible le ${jour} pour ce médecin.`,
-                buttons: ['OK']
-              });
-              await errorAlert.present();
-              return false;
-            }
-
-            // Si tout est valide, enregistrer le rendez-vous
-            const rdv = {
-              medecinId: medecinId,
-              jour: jour,
-              debut: debut,
-              fin: fin
-            };
-
-            this.rdvService.prendreRendezVous(rdv).subscribe({
-              next: async () => {
-                const successAlert = await this.alertCtrl.create({
-                  header: 'Succès',
-                  message: 'Rendez-vous pris avec succès !',
-                  buttons: ['OK']
-                });
-                await successAlert.present();
-              },
-              error: async (err: any) => {
-                const errorAlert = await this.alertCtrl.create({
-                  header: 'Erreur',
-                  message: err.error?.message || 'Erreur lors de la prise de rendez-vous',
-                  buttons: ['OK']
-                });
-                await errorAlert.present();
-              }
-            });
+            await creneauAlert.present();
             return true;
           }
         }
       ]
     });
+    await jourAlert.present();
+  }
+
+  async showAlert(header: string, message: string) {
+    const alert = await this.alertCtrl.create({
+      header,
+      message,
+      buttons: ['OK']
+    });
     await alert.present();
   }
 
-  // Utilitaire pour convertir une heure (HH:mm) en minutes
-  private timeToMinutes(time: string): number {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
+  goToPage(route: string) {
+    this.router.navigate([route]);
   }
 }

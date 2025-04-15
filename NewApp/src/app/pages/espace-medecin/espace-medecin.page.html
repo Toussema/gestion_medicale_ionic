@@ -3,7 +3,12 @@
       <ion-title>Espace Médecin</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content>
+
+
+<ion-content class="ion-padding">
+    <div class="welcome-text">
+        <h2>🩺 Espace Médecin</h2>
+    </div>
   <ion-list>
       <ion-item *ngFor="let jour of jours">
           <ion-label>{{ jour | titlecase }}</ion-label>

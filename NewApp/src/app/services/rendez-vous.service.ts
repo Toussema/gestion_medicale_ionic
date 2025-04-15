@@ -38,4 +38,9 @@ export class RendezVousService {
     getMedecins(): Observable<any[]> {
       return this.http.get<any[]>(`${this.apiUrl}/medecins`);  // Pas besoin de token pour cette route publique
   }
+
+  // Nouvelle méthode pour la recherche filtrée
+  searchMedecins(params: { specialite?: string, adresse?: string, term?: string }): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/medecins/search`, { params });
+  }
 }

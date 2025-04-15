@@ -7,6 +7,7 @@ from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 import sqlite3
 import io
+import re
 
 app = Flask(__name__)
 # Configuration CORS explicite
@@ -173,14 +174,35 @@ def manage_disponibilites():
         data = request.get_json()
         if not isinstance(data, dict):
             return jsonify({"message": "Données invalides"}), 400
+        
+        # Valider et ajouter est_disponible par défaut à True
+        valid_days = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"]
+        updated_horaires = {}
+        for jour, creneaux in data.items():
+            if jour not in valid_days:
+                continue
+            updated_creneaux = []
+            for creneau in creneaux:
+                if "debut" in creneau and "fin" in creneau:
+                    updated_creneaux.append({
+                        "debut": creneau["debut"],
+                        "fin": creneau["fin"],
+                        "est_disponible": True  # Toujours True pour un nouveau créneau
+                    })
+            updated_horaires[jour] = updated_creneaux
+        
+        
+        if not updated_horaires:
+            return jsonify({"message": "Aucun créneau valide fourni"}), 400
+        
         disponibilites.update_one(
             {"medecinId": user_id},
-            {"$set": {"horaires": data}},
+            {"$set": {"horaires": updated_horaires}},
             upsert=True
         )
         return jsonify({"message": "Disponibilités mises à jour"}), 200
 
-# Nouvelle route pour récupérer la liste des médecins avec leurs disponibilités
+# route pour récupérer la liste des médecins avec leurs disponibilités
 @app.route('/medecins', methods=['GET'])
 def get_medecins():
     try:
@@ -190,6 +212,23 @@ def get_medecins():
             medecin_id = str(medecin["_id"])
             dispo = disponibilites.find_one({"medecinId": medecin_id})
             default_dispo = {"lundi": [], "mardi": [], "mercredi": [], "jeudi": [], "vendredi": [], "samedi": []}
+            horaires = dispo["horaires"] if dispo else default_dispo
+            
+            # Filtrer les créneaux disponibles et valides
+            filtered_horaires = {}
+            for jour, creneaux in horaires.items():
+                filtered_creneaux = [
+                    {"debut": creneau["debut"], "fin": creneau["fin"]}
+                    for creneau in creneaux
+                    if (creneau.get("est_disponible", False) and
+                        creneau.get("debut") and creneau.get("fin") and
+                        isinstance(creneau["debut"], str) and isinstance(creneau["fin"], str) and
+                        re.match(r"^\d{2}:\d{2}$", creneau["debut"]) and
+                        re.match(r"^\d{2}:\d{2}$", creneau["fin"]))
+                ]
+                if filtered_creneaux:
+                    filtered_horaires[jour] = filtered_creneaux
+            
             medecin_data = {
                 "id": medecin_id,
                 "name": medecin.get("name", "Médecin"),
@@ -201,7 +240,7 @@ def get_medecins():
                 "faculte": medecin.get("faculte", ""),
                 "tel": medecin.get("tel", ""),
                 "gsm": medecin.get("gsm", ""),
-                "disponibilites": dispo["horaires"] if dispo else default_dispo
+                "disponibilites": filtered_horaires
             }
             result.append(medecin_data)
         return jsonify(result), 200
@@ -254,13 +293,41 @@ def manage_rendezvous():
         data = request.get_json()
         if claims["role"] != "patient" or not all(k in data for k in ["medecinId", "jour", "debut", "fin"]):
             return jsonify({"message": "Données invalides ou accès refusé"}), 400
+        
+        medecin_id = data["medecinId"]
+        jour = data["jour"].lower()
+        debut = data["debut"]
+        fin = data["fin"]
+
+        # Vérifier que le créneau est disponible
+        dispo = disponibilites.find_one({"medecinId": medecin_id})
+        if not dispo or jour not in dispo["horaires"]:
+            return jsonify({"message": "Créneau non disponible"}), 400
+        
+        creneaux = dispo["horaires"][jour]
+        creneau_index = next(
+            (i for i, c in enumerate(creneaux)
+             if c["debut"] == debut and c["fin"] == fin and c["est_disponible"]),
+            None
+        )
+        if creneau_index is None:
+            return jsonify({"message": "Créneau non disponible ou déjà réservé"}), 409
+
+        # Mettre à jour est_disponible à False
+        dispo["horaires"][jour][creneau_index]["est_disponible"] = False
+        disponibilites.update_one(
+            {"medecinId": medecin_id},
+            {"$set": {f"horaires.{jour}": dispo["horaires"][jour]}}
+        )
+        
         rdv = {
             "medecinId": data["medecinId"],
             "patientId": user_id,
             "jour": data["jour"],
             "debut": data["debut"],
             "fin": data["fin"],
-            "statut": "confirmé"
+            "statut": "confirmé",
+            "date_creation": datetime.now().isoformat()
         }
         result = rendezvous.insert_one(rdv)
         # Notification pour le médecin
@@ -280,7 +347,29 @@ def annuler_rendezvous(rdv_id):
     rdv = rendezvous.find_one({"_id": ObjectId(rdv_id)})
     if not rdv or (rdv["patientId"] != user_id and rdv["medecinId"] != user_id):
         return jsonify({"message": "Rendez-vous non trouvé ou accès refusé"}), 404
-    rendezvous.update_one({"_id": ObjectId(rdv_id)}, {"$set": {"statut": "annulé"}})
+    
+    # Marquer le rendez-vous comme annulé
+    rendezvous.update_one(
+        {"_id": ObjectId(rdv_id)},
+        {"$set": {"statut": "annulé"}}
+    )
+
+    # Remettre le créneau à disponible
+    dispo = disponibilites.find_one({"medecinId": rdv["medecinId"]})
+    if dispo and rdv["jour"] in dispo["horaires"]:
+        creneaux = dispo["horaires"][rdv["jour"]]
+        creneau_index = next(
+            (i for i, c in enumerate(creneaux)
+             if c["debut"] == rdv["debut"] and c["fin"] == rdv["fin"]),
+            None
+        )
+        if creneau_index is not None:
+            dispo["horaires"][rdv["jour"]][creneau_index]["est_disponible"] = True
+            disponibilites.update_one(
+                {"medecinId": rdv["medecinId"]},
+                {"$set": {f"horaires.{rdv['jour']}": dispo["horaires"][rdv["jour"]]}}
+            )
+    
     
     # Notifications selon qui annule
     if claims["role"] == "patient":
@@ -447,6 +536,44 @@ def mark_notification_read(notif_id):
         return jsonify({"message": "Notification non trouvée ou déjà lue"}), 404
     return jsonify({"message": "Notification marquée comme lue"}), 200
 
+# Nouvelle route pour récupérer les médecins avec lesquels le patient a un rendez-vous
+@app.route('/patient/medecins', methods=['GET'])
+@jwt_required()
+def get_patient_medecins():
+    user_id = get_jwt_identity()
+    claims = get_jwt()
+
+    if claims["role"] != "patient":
+        return jsonify({"message": "Accès réservé aux patients"}), 403
+
+    try:
+        # Trouver tous les rendez-vous du patient
+        rdvs = list(rendezvous.find({"patientId": user_id}))
+
+        # Récupérer les IDs des médecins uniques
+        medecin_ids = list(set(rdv["medecinId"] for rdv in rdvs))
+
+        # Récupérer les informations des médecins
+        medecins_list = list(medecins.find({"_id": {"$in": [ObjectId(id) for id in medecin_ids]}}, {"password": 0}))
+        result = []
+        for medecin in medecins_list:
+            medecin_data = {
+                "id": str(medecin["_id"]),
+                "name": medecin.get("name", "Médecin"),
+                "email": medecin["email"],
+                "specialite": medecin.get("specialite", ""),
+                "adresse": medecin.get("adresse", ""),
+                "sexe": medecin.get("sexe", ""),
+                "etab": medecin.get("etab", ""),
+                "faculte": medecin.get("faculte", ""),
+                "tel": medecin.get("tel", ""),
+                "gsm": medecin.get("gsm", "")
+            }
+            result.append(medecin_data)
+        return jsonify(result), 200
+    except Exception as e:
+        print(f"Erreur lors de la récupération des médecins du patient : {str(e)}")
+        return jsonify({"message": "Erreur interne du serveur"}), 500
 
 # Route pour récupérer le profil de l'utilisateur connecté
 @app.route('/user/profile', methods=['GET'])
@@ -477,7 +604,7 @@ def get_user_profile():
         print("Rôle non reconnu")
         return jsonify({"message": "Rôle non reconnu"}), 400
 
-# Route pour mettre à jour le profil de l'utilisateur connecté
+# Route pour mettre à jour le profil de l'utilisateur connecté avec vérification email/mot de passe
 @app.route('/user/profile', methods=['PUT'])
 @jwt_required()
 def update_user_profile():
@@ -487,6 +614,21 @@ def update_user_profile():
 
     if not data:
         return jsonify({"message": "Aucune donnée fournie"}), 400
+    
+    # Vérification des identifiants
+    email = data.get("email")
+    password = data.get("password")
+    if not email or not password:
+        return jsonify({"message": "Email et mot de passe requis pour la mise à jour"}), 400
+
+    # Vérifier l'utilisateur dans la bonne collection
+    collection = medecins if claims["role"] == "medecin" else patients
+    user = collection.find_one({"_id": ObjectId(user_id)})
+
+    if not user or user["email"] != email:
+        return jsonify({"message": "Email incorrect"}), 401
+    if not bcrypt.check_password_hash(user["password"], password):
+        return jsonify({"message": "Mot de passe incorrect"}), 401
 
     # Champs autorisés pour chaque rôle (tous les champs possibles)
     allowed_fields = {
@@ -512,6 +654,112 @@ def update_user_profile():
         return jsonify({"message": "Rôle non reconnu"}), 400
 
     return jsonify({"message": "Profil mis à jour avec succès"}), 200
+
+# Nouvelle route pour supprimer le compte
+@app.route('/user/delete', methods=['DELETE'])
+@jwt_required()
+def delete_user():
+    user_id = get_jwt_identity()
+    claims = get_jwt()
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"message": "Aucune donnée fournie"}), 400
+
+    # Vérification des identifiants
+    email = data.get("email")
+    password = data.get("password")
+    if not email or not password:
+        return jsonify({"message": "Email et mot de passe requis pour la suppression"}), 400
+
+    # Vérifier l'utilisateur dans la bonne collection
+    collection = medecins if claims["role"] == "medecin" else patients
+    user = collection.find_one({"_id": ObjectId(user_id)})
+
+    if not user or user["email"] != email:
+        return jsonify({"message": "Email incorrect"}), 401
+    if not bcrypt.check_password_hash(user["password"], password):
+        return jsonify({"message": "Mot de passe incorrect"}), 401
+
+    # Supprimer l'utilisateur
+    result = collection.delete_one({"_id": ObjectId(user_id)})
+    if result.deleted_count == 0:
+        return jsonify({"message": "Utilisateur non trouvé"}), 404
+
+    # Optionnel : Supprimer les rendez-vous associés
+    if claims["role"] == "patient":
+        rendezvous.delete_many({"patientId": user_id})
+    elif claims["role"] == "medecin":
+        rendezvous.delete_many({"medecinId": user_id})
+
+    return jsonify({"message": "Compte supprimé avec succès"}), 200
+
+@app.route('/medecins/search', methods=['GET'])
+def search_medecins():
+    try:
+        specialite = request.args.get('specialite', '').lower().strip()
+        adresse = request.args.get('adresse', '').lower().strip()
+        term = request.args.get('term', '').lower().strip()
+
+        query = {}
+        if specialite:
+            query["specialite"] = {"$regex": specialite, "$options": "i"}
+        if adresse:
+            query["adresse"] = {"$regex": adresse, "$options": "i"}
+        if term:
+            query["$or"] = [
+                {"name": {"$regex": term, "$options": "i"}},
+                {"email": {"$regex": term, "$options": "i"}},
+                {"specialite": {"$regex": term, "$options": "i"}},
+                {"adresse": {"$regex": term, "$options": "i"}},
+                {"tel": {"$regex": term, "$options": "i"}},
+                {"gsm": {"$regex": term, "$options": "i"}},
+                {"sexe": {"$regex": term, "$options": "i"}},
+                {"etab": {"$regex": term, "$options": "i"}},
+                {"faculte": {"$regex": term, "$options": "i"}}
+            ]
+
+        medecins_list = list(medecins.find(query, {"password": 0}))
+        result = []
+        for medecin in medecins_list:
+            medecin_id = str(medecin["_id"])
+            dispo = disponibilites.find_one({"medecinId": medecin_id})
+            default_dispo = {"lundi": [], "mardi": [], "mercredi": [], "jeudi": [], "vendredi": [], "samedi": []}
+            horaires = dispo["horaires"] if dispo else default_dispo
+            
+            # Filtrer les créneaux disponibles et valides
+            filtered_horaires = {}
+            for jour, creneaux in horaires.items():
+                filtered_creneaux = [
+                    {"debut": creneau["debut"], "fin": creneau["fin"]}
+                    for creneau in creneaux
+                    if (creneau.get("est_disponible", False) and
+                        creneau.get("debut") and creneau.get("fin") and
+                        isinstance(creneau["debut"], str) and isinstance(creneau["fin"], str) and
+                        re.match(r"^\d{2}:\d{2}$", creneau["debut"]) and
+                        re.match(r"^\d{2}:\d{2}$", creneau["fin"]))
+                ]
+                if filtered_creneaux:
+                    filtered_horaires[jour] = filtered_creneaux
+            
+            medecin_data = {
+                "id": medecin_id,
+                "name": medecin.get("name", ""),
+                "email": medecin["email"],
+                "specialite": medecin.get("specialite", ""),
+                "adresse": medecin.get("adresse", ""),
+                "sexe": medecin.get("sexe", ""),
+                "etab": medecin.get("etab", ""),
+                "faculte": medecin.get("faculte", ""),
+                "tel": medecin.get("tel", ""),
+                "gsm": medecin.get("gsm", ""),
+                "disponibilites": filtered_horaires
+            }
+            result.append(medecin_data)
+        return jsonify(result), 200
+    except Exception as e:
+        print(f"Erreur lors de la recherche des médecins : {str(e)}")
+        return jsonify({"message": "Erreur interne du serveur"}), 500
 
 @app.route('/')
 def home():

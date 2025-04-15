@@ -23,3 +23,6 @@ imports: [IonicModule],  // Ajoute cette ligne
 <app-my-component title="Bienvenue sur Ionic 7"></app-my-component>
 ou bien dans <ion-content></ion-content>
 
+//////
++ page pour afficher toutes les notifs
++ 

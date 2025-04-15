@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, ElementRef } from '@angular/core';
 import { IonicModule, PopoverController } from '@ionic/angular';
 import { NotificationsComponent } from '../notifications/notifications.component';
 import { CommonModule } from '@angular/common';
@@ -21,7 +21,8 @@ export class HeaderComponent implements OnInit {
   constructor(
     private popoverController: PopoverController,
     private documentsService: DocumentsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private elementRef: ElementRef
   ) {}
 
   ngOnInit() {
@@ -55,11 +56,35 @@ export class HeaderComponent implements OnInit {
     const popover = await this.popoverController.create({
       component: NotificationsComponent,
       event: event,
-      translucent: true
+      translucent: false,
+      cssClass: 'custom-popover',
+      backdropDismiss: true,
+      dismissOnSelect: true,
     });
+
     await popover.present();
+
     popover.onDidDismiss().then(() => {
       this.loadUnreadCount();
+
+      // Retirer le focus des éléments à l'intérieur du popover
+      const activeElement = document.activeElement as HTMLElement;
+      if (activeElement) {
+        activeElement.blur();
+      }
+
+      // Forcer l'attribut inert sur le popover
+      const popoverElement = document.querySelector(`#${popover.id}`);
+      if (popoverElement) {
+        popoverElement.setAttribute('inert', '');
+        popoverElement.setAttribute('aria-hidden', 'true');
+      }
+
+      // Déplacer le focus vers le bouton de notifications
+      const notificationsButton = this.elementRef.nativeElement.querySelector('ion-button[title="Notifications"]');
+      if (notificationsButton) {
+        notificationsButton.focus();
+      }
     });
   }
 }

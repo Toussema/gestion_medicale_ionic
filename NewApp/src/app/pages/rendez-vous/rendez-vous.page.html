@@ -4,8 +4,11 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-list>
+<ion-content class="ion-padding">
+    <div class="welcome-text">
+        <h2>📅 Mes Rendez-vous</h2>
+    </div>
+    <ion-list>
       <!-- Conteneur pour boucler sur les rendez-vous -->
       <ng-container *ngFor="let rdv of rendezVous">
           <!-- Affichage pour les patients -->

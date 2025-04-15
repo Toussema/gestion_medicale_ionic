@@ -1,3 +1,6 @@
 ion-input[disabled] {
     opacity: 1; /* Éviter que les champs désactivés soient trop pâles */
   }
+  ion-button {
+    margin-top: 10px; /* Espacement entre les boutons */
+  }

@@ -1,9 +1,58 @@
-ion-badge {
+.custom-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+  
+  .title-center {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.1rem;
+    font-weight: 500;
   }
-  ion-button {
-    position: relative;
+  
+  .actions-wrapper {
+    display: flex;
+    margin-left: auto;
+    gap: 4px;
+    
+    ion-button {
+      --padding-start: 6px;
+      --padding-end: 6px;
+      margin: 0;
+      height: 44px;
+      
+      ion-icon {
+        font-size: 1.4rem;
+      }
+    }
+    
+    .notification-btn {
+      position: relative;
+      
+      ion-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        font-size: 10px;
+        min-width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    
+    .profile-btn {
+      .profile-name {
+        margin-left: 4px;
+        font-size: 0.9rem;
+        max-width: 80px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
   }
+}

@@ -1,0 +1,19 @@
+ion-label {
+    p {
+      margin: 5px 0;
+      display: flex;
+      align-items: center;
+      
+      ion-badge {
+        margin-left: 5px;
+      }
+    }
+  }
+  
+  .doc-item {
+    --min-height: 80px;
+    
+    ion-label {
+      white-space: normal;
+    }
+  }

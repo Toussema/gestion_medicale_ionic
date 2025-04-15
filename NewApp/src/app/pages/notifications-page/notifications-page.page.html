@@ -1,0 +1,31 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Toutes les notifications</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content  class="ion-padding">
+  <div class="welcome-text">
+    <h2>🔔 Toutes les notifications</h2>
+  </div>
+  <ion-list>
+    <ion-item *ngFor="let notif of notifications" [class.read]="notif.read">
+      <ion-label>
+        <h3>{{ notif.message }}</h3>
+        <p>{{ notif.created_at | date:'medium' }}</p>
+      </ion-label>
+
+      <ion-button slot="end" fill="clear" (click)="markAsRead(notif.id)" *ngIf="!notif.read">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+      </ion-button>
+
+      <ion-button slot="end" fill="clear" color="danger" (click)="removeNotification(notif.id)">
+        <ion-icon name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <ion-item *ngIf="notifications.length === 0">
+      <ion-label>Aucune notification</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

@@ -4,11 +4,11 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="welcome-text">
+    <h2>👤 Gérer le profil</h2>
+  </div>
   <ion-card>
-    <ion-card-header>
-      <ion-card-title>Vos informations</ion-card-title>
-    </ion-card-header>
     <ion-card-content>
       <ion-list>
         <!-- Champs communs (patient et médecin) -->
@@ -51,12 +51,14 @@
           <ion-input [(ngModel)]="userData.faculte" [disabled]="!isEditing" placeholder="Entrez votre faculté"></ion-input>
         </ion-item>
 
-        <!-- Boutons -->
-        <ion-button *ngIf="!isEditing" expand="block" (click)="toggleEdit()">Modifier</ion-button>
+        <!-- Boutons pour modifier -->
+        <ion-button *ngIf="!isEditing" expand="block" color="primary" (click)="toggleEdit()">Modifier</ion-button>
         <div *ngIf="isEditing">
           <ion-button expand="block" color="success" (click)="saveChanges()">Enregistrer</ion-button>
           <ion-button expand="block" color="danger" (click)="toggleEdit()">Annuler</ion-button>
         </div>
+        <!-- Bouton pour supprimer le compte -->
+        <ion-button expand="block" color="danger" (click)="deleteAccount()" *ngIf="!isEditing">Supprimer le compte</ion-button>
       </ion-list>
     </ion-card-content>
   </ion-card>
