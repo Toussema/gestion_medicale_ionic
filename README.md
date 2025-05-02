@@ -39,7 +39,7 @@ Bienvenue dans le dépôt de l'**Application mobile de gestion médicale**, une 
 
 1. **Cloner le dépôt** :
    ```bash
-   git clone https://github.com/<votre-utilisateur>/<nom-du-depot>.git
+   git clone https://github.com/<Toussema>/<gestion_medicale_ionic>.git
    cd <nom-du-depot>
    ```
 
@@ -110,8 +110,8 @@ Bienvenue dans le dépôt de l'**Application mobile de gestion médicale**, une 
 │   │   │   │   ├── auth.service.ts       # Gestion authentification
 │   │   │   │   └── rendez-vous.service.ts # Gestion rendez-vous/disponibilités
 │   │   └── assets/          # Ressources statiques
-├── README.md                # Ce fichier
-└── package.json             # Dépendances frontend
+└── guide d'utilisation.pdf
+└── README.md                # Ce fichier
 ```
 
 ## Dépannage
