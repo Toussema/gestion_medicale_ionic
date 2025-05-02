@@ -95,7 +95,7 @@ Bienvenue dans le dépôt de l'**Application mobile de gestion médicale**, une 
 ## Structure du projet
 
 ```
-<nom-du-depot>/
+<gestion_medicale_ionic>/
 ├── backend/
 │   ├── app.py               # Serveur Flask (routes, logique backend)
 │   ├── documents.db         # Base SQLite pour les documents (créée automatiquement)
