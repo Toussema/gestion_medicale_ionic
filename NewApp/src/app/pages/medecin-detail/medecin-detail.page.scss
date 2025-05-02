@@ -1,0 +1,156 @@
+/* Import d'une police moderne et lisible */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+/* Styles généraux */
+ion-content {
+  --background: var(--ion-background-color);
+  font-family: var(--ion-font-family);
+}
+
+/* Header */
+.header-toolbar {
+  --background: var(--ion-gradient-primary);
+  --color: var(--ion-color-primary-contrast);
+}
+
+.header-toolbar ion-title {
+  font-size: var(--ion-font-size-large);
+  font-weight: var(--ion-font-weight-medium);
+  letter-spacing: 0.5px;
+}
+
+/* Carte du médecin */
+.medecin-card {
+  --background: var(--ion-card-background);
+  border-radius: var(--ion-border-radius-medium);
+  margin: 20px;
+  box-shadow: var(--ion-shadow-medium);
+  padding: 15px;
+  transition: var(--ion-transition-default);
+}
+.medecin-card:hover {
+  transform: var(--ion-scale-hover);
+  box-shadow: var(--ion-shadow-hover);
+}
+
+.medecin-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* En-tête */
+.medecin-header {
+  margin-bottom: 15px;
+}
+.medecin-header h2 {
+  color: var(--ion-color-primary);
+  font-size: var(--ion-font-size-xlarge);
+  font-weight: var(--ion-font-weight-medium);
+  margin: 0;
+}
+.medecin-header .specialite {
+  color: var(--ion-text-muted);
+  font-size: var(--ion-font-size-medium);
+  font-weight: var(--ion-font-weight-regular);
+}
+
+/* Informations générales */
+.medecin-info {
+  margin-bottom: 20px;
+}
+.medecin-info .info-item {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+  color: var(--ion-text-color);
+  font-size: var(--ion-font-size-medium);
+  font-weight: var(--ion-font-weight-regular);
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.medecin-info .info-item ion-icon {
+  margin-right: 10px;
+  color: var(--ion-color-primary);
+  font-size: var(--ion-font-size-large);
+}
+.medecin-info .info-item span {
+  font-weight: var(--ion-font-weight-medium);
+  color: var(--ion-text-color);
+  min-width: 90px;
+}
+
+/* Section des disponibilités */
+.dispo-section {
+  margin-top: 10px;
+}
+.dispo-section h3 {
+  color: var(--ion-color-primary);
+  font-size: var(--ion-font-size-large);
+  font-weight: var(--ion-font-weight-medium);
+  margin: 0 0 10px 0;
+  border-bottom: 1px solid var(--ion-border-color);
+  padding-bottom: 5px;
+}
+
+.dispo-list {
+  padding: 0;
+}
+
+.dispo-item {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.dispo-day {
+  font-weight: bold;
+  text-transform: capitalize;
+  color: var(--ion-color-primary);
+  min-width: 90px;
+  font-size: var(--ion-font-size-medium);
+}
+
+.dispo-time, .creneau {
+  color: var(--ion-text-muted);
+  font-weight: var(--ion-font-weight-regular);
+  font-size: var(--ion-font-size-small);
+}
+
+/* Bouton RDV */
+.rdv-button {
+  --background: var(--ion-color-primary);
+  --border-radius: var(--ion-border-radius-small);
+  --padding-start: 20px;
+  --padding-end: 20px;
+  --color: var(--ion-color-primary-contrast);
+  font-size: var(--ion-font-size-medium);
+  font-weight: var(--ion-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  height: 40px;
+  width: 100%;
+  max-width: 200px;
+  margin: 15px auto 0;
+  display: block;
+  animation: pulse 2s infinite;
+  box-shadow: var(--ion-shadow-light);
+  transition: var(--ion-transition-default);
+}
+.rdv-button:hover {
+  --background: var(--ion-color-primary-shade);
+  box-shadow: var(--ion-shadow-hover);
+  transform: var(--ion-scale-hover);
+}
+
+/* Responsive (desktop) */
+@media (min-width: 768px) {
+  .medecin-content {
+    flex-direction: column;
+  }
+}

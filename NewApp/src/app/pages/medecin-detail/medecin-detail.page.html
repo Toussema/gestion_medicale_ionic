@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Détails du Médecin</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="welcome-text">
+    <h2>🏥 Détails du médecin</h2>
+  </div>
+  <ion-card *ngIf="medecin" class="medecin-card">
+    <ion-card-content>
+      <div class="medecin-content">
+        <div class="medecin-header">
+          <h2>{{ medecin.name }} <span class="specialite">({{ medecin.specialite || 'Généraliste' }})</span></h2>
+        </div>
+        <div class="medecin-info">
+          <p class="info-item"><ion-icon name="mail-outline"></ion-icon> <span>Email:</span> {{ medecin.email }}</p>
+          <p class="info-item"><ion-icon name="male-female-outline"></ion-icon> <span>Sexe:</span> {{ medecin.sexe || 'Non spécifié' }}</p>
+          <p class="info-item"><ion-icon name="business-outline"></ion-icon> <span>Établissement:</span> {{ medecin.etab || 'Non spécifié' }}</p>
+          <p class="info-item"><ion-icon name="school-outline"></ion-icon> <span>Faculté:</span> {{ medecin.faculte || 'Non spécifiée' }}</p>
+          <p class="info-item"><ion-icon name="location-outline"></ion-icon> <span>Gouvernorat:</span> {{ medecin.gouvernorat || 'Non spécifié' }}</p>
+          <p class="info-item"><ion-icon name="location-outline"></ion-icon> <span>Ville:</span> {{ medecin.ville || 'Non spécifiée' }}</p>
+          <p class="info-item"><ion-icon name="location-outline"></ion-icon> <span>Adresse:</span> {{ medecin.adresse || 'Non spécifiée' }}</p>
+          <p class="info-item"><ion-icon name="call-outline"></ion-icon> <span>Téléphone:</span> {{ medecin.tel || 'Non spécifié' }}</p>
+          <p class="info-item"><ion-icon name="phone-portrait-outline"></ion-icon> <span>GSM:</span> {{ medecin.gsm || 'Non spécifié' }}</p>
+        </div>
+        <div class="dispo-section">
+          <h3>Disponibilités</h3>
+          <ion-list class="dispo-list">
+            <ion-item *ngFor="let jour of validDays" class="dispo-item">
+              <ion-label class="dispo-day">{{ jour | titlecase }}</ion-label>
+              <ion-text class="dispo-time">
+                <span *ngIf="!medecin.disponibilites[jour] || medecin.disponibilites[jour].length === 0">Aucune disponibilité</span>
+                <span *ngFor="let creneau of medecin.disponibilites[jour]; let isLast=last" class="creneau">
+                  {{ creneau.debut }} - {{ creneau.fin }}{{ isLast ? '' : ', ' }}
+                </span>
+              </ion-text>
+            </ion-item>
+          </ion-list>
+        </div>
+        <ion-button class="rdv-button" (click)="prendreRendezVous(medecin.id)" *ngIf="userRole === 'patient'">
+          Prendre RDV
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
