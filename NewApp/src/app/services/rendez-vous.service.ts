@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class RendezVousService {
-    private apiUrl = 'http://127.0.0.1:5000';
+    private apiUrl = 'https://0229-41-225-35-16.ngrok-free.app';
 
     constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -36,11 +36,24 @@ export class RendezVousService {
 
     // Nouvelle méthode pour récupérer la liste des médecins
     getMedecins(): Observable<any[]> {
-      return this.http.get<any[]>(`${this.apiUrl}/medecins`);  // Pas besoin de token pour cette route publique
-  }
+        return this.http.get<any[]>(`${this.apiUrl}/medecins`);  // Pas besoin de token pour cette route publique
+    }
 
-  // Nouvelle méthode pour la recherche filtrée
-  searchMedecins(params: { specialite?: string, adresse?: string, term?: string }): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/medecins/search`, { params });
-  }
+    // Nouvelle méthode pour la recherche filtrée
+    searchMedecins(params: { specialite?: string, adresse?: string, term?: string }): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/medecins/search`, { params });
+    }
+
+
+    getGouvernorats(): Observable<string[]> {
+        return this.http.get<string[]>(`${this.apiUrl}/gouvernorats`);
+    }
+
+    getVilles(): Observable<string[]> {
+        return this.http.get<string[]>(`${this.apiUrl}/villes`);
+    }
+
+    getSpecialites(): Observable<string[]> {
+        return this.http.get<string[]>(`${this.apiUrl}/specialites`);
+    }
 }

@@ -25,6 +25,6 @@ import { AuthService } from './services/auth.service'; // Importer AuthService
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule, IonicModule, HeaderComponent, TabsComponent, ProfileMenuComponent ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, provideHttpClient(withInterceptorsFromDi()), AuthService],
   bootstrap: [AppComponent],
-  exports: [HeaderComponent, TabsComponent], // Permet de l'utiliser dans d'autres pages
+  exports: [HeaderComponent, ProfileMenuComponent, TabsComponent], // Permet de l'utiliser dans d'autres pages
 })
 export class AppModule {}

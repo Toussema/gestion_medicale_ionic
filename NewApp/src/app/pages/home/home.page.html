@@ -8,97 +8,175 @@
   <!-- Message de bienvenue -->
   <div class="welcome-text">
     <h2>Bienvenue sur MediConnect</h2>
-    <p>Accédez à vos services de santé en toute simplicité.</p>
   </div>
+  <img src="assets/images/218148350.png" alt="Logo de l'application" class="app-logo" />
 
-<!-- Formulaire de filtres -->
-<ion-card class="filter-card">
-  <ion-card-header (click)="toggleFilters()">
-    <ion-card-title>🔍 Rechercher un médecin</ion-card-title>
-    <ion-icon 
-      slot="end" 
-      [name]="showFilters ? 'chevron-up-outline' : 'chevron-down-outline'"
-      class="toggle-icon">
-    </ion-icon>
-  </ion-card-header>
-  
-  <ion-card-content *ngIf="showFilters" class="filter-content">
-    <ion-item class="filter-item" lines="none">
-      <ion-label position="stacked">Recherche générale</ion-label>
-      <ion-input 
-        [(ngModel)]="filters.term" 
-        (ionInput)="filterMedecins()" 
-        placeholder="Nom, email, etc."
-        clearInput>
-      </ion-input>
-    </ion-item>
+  <!-- Formulaire de filtres -->
+  <ion-card class="filter-card">
+    <ion-card-header (click)="toggleFilters()">
+      <ion-card-title>🔍 Rechercher un médecin</ion-card-title>
+      <ion-icon 
+        slot="end" 
+        [name]="showFilters ? 'chevron-up-outline' : 'chevron-down-outline'"
+        class="toggle-icon">
+      </ion-icon>
+    </ion-card-header>
     
-    <ion-item class="filter-item" lines="none">
-      <ion-label position="stacked">Spécialité</ion-label>
-      <ion-input [(ngModel)]="filters.specialite" (ionInput)="filterMedecins()" placeholder="Cardiologie, Généraliste, etc."></ion-input>
-    </ion-item>
-    
-    <ion-item class="filter-item" lines="none">
-      <ion-label position="stacked">Localisation</ion-label>
-      <ion-input 
-        [(ngModel)]="filters.adresse" 
-        (ionInput)="filterMedecins()" 
-        placeholder="Ville, rue, etc."
-        clearInput>
-      </ion-input>
-    </ion-item>
-    
-    <div class="filter-buttons">
-      <ion-button expand="block" color="primary" shape="round" (click)="filterMedecins()">
-        Appliquer
-      </ion-button>
-      <ion-button expand="block" color="medium" fill="outline" shape="round" (click)="resetFilters()">
-        Réinitialiser
-      </ion-button>
-    </div>
-  </ion-card-content>
-</ion-card>
-
-
-  <!-- Liste des médecins -->
-  <ion-list class="medecin-list">
-    <ion-item *ngFor="let medecin of medecins" class="medecin-card">
-      <div class="medecin-content">
-        <ion-label class="medecin-details">
-          <div class="medecin-header">
-            <h2>{{ medecin.name }} <span class="specialite">({{ medecin.specialite || 'Généraliste' }})</span></h2>
-          </div>
-          <div class="medecin-info">
-            <p class="info-item"><ion-icon name="mail-outline"></ion-icon> <span>Email:</span> {{ medecin.email }}</p>
-            <p class="info-item"><ion-icon name="male-female-outline"></ion-icon> <span>Sexe:</span> {{ medecin.sexe || 'Non spécifié' }}</p>
-            <p class="info-item"><ion-icon name="business-outline"></ion-icon> <span>Établissement:</span> {{ medecin.etab || 'Non spécifié' }}</p>
-            <p class="info-item"><ion-icon name="school-outline"></ion-icon> <span>Faculté:</span> {{ medecin.faculte || 'Non spécifiée' }}</p>
-            <p class="info-item"><ion-icon name="location-outline"></ion-icon> <span>Adresse:</span> {{ medecin.adresse || 'Non spécifiée' }}</p>
-            <p class="info-item"><ion-icon name="call-outline"></ion-icon> <span>Téléphone:</span> {{ medecin.tel || 'Non spécifié' }}</p>
-            <p class="info-item"><ion-icon name="phone-portrait-outline"></ion-icon> <span>GSM:</span> {{ medecin.gsm || 'Non spécifié' }}</p>
-          </div>
-          <ion-button expand="block" (click)="toggleDisponibilites(medecin)">
-            {{ medecin.showDisponibilites ? 'Masquer' : 'Disponibilités' }}
-          </ion-button>
-          <div class="dispo-section" *ngIf="medecin.showDisponibilites">
-            <h3>Disponibilités</h3>
-            <ion-list class="dispo-list">
-              <ion-item *ngFor="let jour of validDays" class="dispo-item">
-                <ion-label class="dispo-day">{{ jour | titlecase }}</ion-label>
-                <ion-text class="dispo-time">
-                  <span *ngIf="medecin.disponibilites[jour]?.length === 0">Aucune disponibilité</span>
-                  <span *ngFor="let creneau of medecin.disponibilites[jour]; let isLast=last" class="creneau">
-                    {{ creneau.debut }} - {{ creneau.fin }}{{ isLast ? '' : ', ' }}
-                  </span>
-                </ion-text>
-              </ion-item>
-            </ion-list>
-          </div>
-        </ion-label>
-        <ion-button class="rdv-button" (click)="prendreRendezVous(medecin.id)" *ngIf="userRole === 'patient'">
-          Prendre RDV
+    <ion-card-content *ngIf="showFilters" class="filter-content">
+      <ion-item class="filter-item" lines="none">
+        <ion-label position="stacked">Recherche générale</ion-label>
+        <ion-input 
+          [(ngModel)]="filters.term" 
+          (ionInput)="filterMedecins()" 
+          placeholder="Nom, email, etc."
+          clearInput>
+        </ion-input>
+      </ion-item>
+      
+      <ion-item class="filter-item" lines="none">
+        <ion-label position="stacked">Spécialité</ion-label>
+        <ion-select 
+          [(ngModel)]="filters.specialite" 
+          (ionChange)="filterMedecins()" 
+          placeholder="Sélectionner une spécialité"
+          interface="popover"
+          cancelText="Annuler"
+          okText="Valider">
+          <ion-select-option *ngFor="let spec of specialites" [value]="spec">{{ spec }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      
+      <ion-item class="filter-item" lines="none">
+        <ion-label position="stacked">Gouvernorat</ion-label>
+        <ion-select 
+          [(ngModel)]="filters.gouvernorat" 
+          (ionChange)="filterMedecins()" 
+          placeholder="Sélectionner un gouvernorat"
+          interface="popover"
+          cancelText="Annuler"
+          okText="Valider">
+          <ion-select-option *ngFor="let gov of gouvernorats" [value]="gov">{{ gov }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      
+      <ion-item class="filter-item" lines="none">
+        <ion-label position="stacked">Ville</ion-label>
+        <ion-select 
+          [(ngModel)]="filters.ville" 
+          (ionChange)="filterMedecins()" 
+          placeholder="Sélectionner une ville"
+          interface="popover"
+          cancelText="Annuler"
+          okText="Valider">
+          <ion-select-option *ngFor="let ville of villes" [value]="ville">{{ ville }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      
+      <div class="filter-buttons">
+        <ion-button expand="block" color="primary" shape="round" (click)="filterMedecins()">
+          Appliquer
+        </ion-button>
+        <ion-button expand="block" color="medium" fill="outline" shape="round" (click)="resetFilters()">
+          Réinitialiser
         </ion-button>
       </div>
-    </ion-item>
-  </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Liste des médecins -->
+   <!-- Liste des médecins -->
+<ion-list class="medecin-list">
+  <ion-item *ngFor="let medecin of medecins" class="medecin-card" lines="none">
+    <div class="medecin-content">
+      <!-- En-tête avec nom et spécialité -->
+      <div class="medecin-header">
+        <h2>
+          <ion-icon name="medkit-outline" color="primary"></ion-icon>
+          {{ medecin.name }}
+          <span class="specialite">{{ medecin.specialite || 'Généraliste' }}</span>
+        </h2>
+      </div>
+
+      <!-- Carte d'information principale -->
+      <div class="info-card">
+        <!-- Localisation -->
+        <div class="location-section">
+          <div class="location-item" [class.available]="medecin.gouvernorat">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>Gouvernorat:</span>
+            <strong>{{ medecin.gouvernorat || 'Non spécifié' }}</strong>
+          </div>
+          
+          <div class="location-item" [class.available]="medecin.ville">
+            <ion-icon name="pin-outline"></ion-icon>
+            <span>Ville:</span>
+            <strong>{{ medecin.ville || 'Non spécifiée' }}</strong>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="action-buttons">
+          <ion-button fill="outline" size="small" (click)="viewMedecinDetails(medecin.id)">
+            <ion-icon slot="start" name="information-circle-outline"></ion-icon>
+            Détails
+          </ion-button>
+          
+          <ion-button fill="outline" size="small" color="primary" (click)="toggleDisponibilites(medecin)">
+            <ion-icon [name]="medecin.showDisponibilites ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+            {{ medecin.showDisponibilites ? 'Masquer' : 'Disponibilités' }}
+          </ion-button>
+          
+          <ion-button *ngIf="userRole === 'patient'" size="small" (click)="prendreRendezVous(medecin.id)">
+            <ion-icon slot="start" name="calendar-outline"></ion-icon>
+            RDV
+          </ion-button>
+        </div>
+      </div>
+
+<!-- Section des disponibilités (dépliante) -->
+<div class="dispo-section" *ngIf="medecin.showDisponibilites">
+  <h3><ion-icon name="time-outline"></ion-icon> Disponibilités</h3>
+  <div class="dispo-grid">
+    <div *ngFor="let jour of validDays" 
+         class="dispo-day" 
+         [class.active]="selectedDay === jour"
+         (click)="toggleDaySelection(jour)">
+      <div class="day-name">{{ jour | titlecase }}</div>
+      <div class="day-slots">
+        <span *ngIf="!medecin.disponibilites[jour]?.length" class="no-slots">
+          Indisponible
+        </span>
+        <span *ngIf="medecin.disponibilites[jour]?.length" class="show-slots">
+          Afficher
+        </span>
+      </div>
+    </div>
+</div>
+  
+  <!-- Overlay pour l'effet de flou -->
+  <div class="day-overlay" *ngIf="selectedDay" (click)="selectedDay = null"></div>
+  
+  <!-- Panneau des créneaux en avant-plan -->
+  <div class="day-details" *ngIf="selectedDay">
+    <div class="day-header">
+      <h4>{{ selectedDay | titlecase }}</h4>
+      <ion-button fill="clear" size="small" (click)="selectedDay = null">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </div>
+    <div class="slot-list">
+      <div *ngIf="!medecin.disponibilites[selectedDay]?.length" class="no-slots">
+        Aucun créneau disponible ce jour
+      </div>
+      <div *ngFor="let creneau of medecin.disponibilites[selectedDay]" 
+           class="time-slot-detail">
+        {{ creneau.debut }} - {{ creneau.fin }}
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+  </ion-item>
+</ion-list>
+
 </ion-content>

@@ -1,0 +1,102 @@
+/* Styles améliorés */
+.welcome-text {
+    text-align: center;
+    margin-bottom: 20px;
+    
+
+    
+    .subtitle {
+      color: var(--ion-color-medium);
+      font-size: 0.9rem;
+    }
+  }
+  
+  .rdv-list {
+    background: transparent;
+  }
+  
+  .rdv-card {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    
+    &.cancelled {
+      opacity: 0.7;
+      background: #f9f9f9;
+    }
+  }
+  
+  .time-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+    padding: 10px;
+    background: var(--ion-color-primary);
+    color: white;
+    border-radius: 5px 5px 5px 5px;
+    margin-left: 5px;
+    
+    .time {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    
+    .duration {
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+  }
+  
+  .rdv-details {
+    padding: 10px 15px;
+    
+    h2 {
+      display: flex;
+      align-items: center;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      
+      ion-icon {
+        margin-right: 8px;
+      }
+      
+      .status {
+        margin-left: 10px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+      }
+    }
+    
+    .specialite, .info-line {
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+      color: var(--ion-color-medium);
+      margin: 4px 0;
+      
+      ion-icon {
+        margin-right: 8px;
+        color: var(--ion-color-primary);
+        min-width: 20px;
+      }
+    }
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 30px 0;
+    
+    .empty-icon {
+      font-size: 2.5rem;
+      color: var(--ion-color-medium);
+      margin-bottom: 10px;
+    }
+    
+    p {
+      color: var(--ion-color-medium);
+    }
+  }

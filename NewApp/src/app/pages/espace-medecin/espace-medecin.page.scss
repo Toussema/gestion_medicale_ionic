@@ -1,18 +1,73 @@
-/* Style pour la section disponibilités */
-ion-card-header {
-    background: var(--ion-color-light);
-    cursor: pointer;
-    border-radius: 8px;
-    margin-bottom: 8px;
+/* Styles améliorés */
+.header-section {
+  margin-bottom: 25px;
+  
+  h1 {
+    font-size: 1.4rem;
+    color: var(--ion-color-primary);
+    margin-bottom: 5px;
+  }
+}
+
+.day-header {
+  --background: #f8f9fa;
+  --color: var(--ion-color-primary);
+  font-weight: 600;
+  border-radius: 8px;
+  margin-top: 10px;
+  
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    font-size: 0.8rem;
+  }
+}
+
+.creneau-item {
+  --padding-start: 16px;
+  --inner-padding-end: 8px;
+  border-left: 4px solid var(--ion-color-primary);
+  margin: 5px 0;
+  border-radius: 4px;
+  background: white;
+  
+  ion-label {
+    font-size: 0.95rem;
   }
   
-  ion-item-divider {
-    --background: #f8f9fa;
-    font-weight: bold;
+  ion-button {
+    --padding-start: 0;
+    --padding-end: 0;
   }
+}
+
+.empty-creneau {
+  --min-height: 40px;
+  font-style: italic;
+  --background: transparent;
   
-  /* Style pour les créneaux */
-  ion-item {
-    --padding-start: 16px;
-    --inner-padding-end: 16px;
+  ion-text {
+    font-size: 0.9rem;
   }
+}
+
+.save-section {
+  margin-top: 30px;
+  padding: 0 10px;
+  
+  ion-button {
+    --padding-top: 18px;
+    --padding-bottom: 18px;
+    font-weight: 500;
+  }
+}
+
+/* Animation pour les nouveaux créneaux */
+.creneau-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,25 +1,59 @@
 <ion-header>
-  <ion-toolbar>
-      <ion-title>Espace Médecin</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-
-<ion-content class="ion-padding">
+    <ion-toolbar color="primary">
+      <ion-title>🩺 Espace Médecin</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content class="ion-padding">
     <div class="welcome-text">
         <h2>🩺 Espace Médecin</h2>
     </div>
-  <ion-list>
-      <ion-item *ngFor="let jour of jours">
+    <div class="header-section">
+        <h1>Gestion des disponibilités</h1>
+        <ion-text color="medium">Définissez vos créneaux de consultation</ion-text>
+      </div>
+  
+    <ion-list class="dispo-list">
+      <ion-item-group *ngFor="let jour of jours">
+        <ion-item-divider class="day-header">
           <ion-label>{{ jour | titlecase }}</ion-label>
-          <ion-button slot="end" (click)="ajouterCreneau(jour)">Ajouter</ion-button>
-          <ion-list>
-              <ion-item *ngFor="let creneau of disponibilites[jour]; let i = index">
-                  {{ creneau.debut }} - {{ creneau.fin }}
-                  <ion-button slot="end" color="danger" (click)="supprimerCreneau(jour, i)">X</ion-button>
-              </ion-item>
-          </ion-list>
-      </ion-item>
-  </ion-list>
-  <ion-button expand="block" (click)="saveDisponibilites()">Sauvegarder</ion-button>
-</ion-content>
+          <ion-button 
+            slot="end" 
+            fill="clear"
+            size="small"
+            (click)="ajouterCreneau(jour)">
+            <ion-icon slot="start" name="add-outline"></ion-icon>
+            Ajouter
+          </ion-button>
+        </ion-item-divider>
+  
+        <ion-item *ngFor="let creneau of disponibilites[jour]; let i = index" class="creneau-item">
+          <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            {{ creneau.debut }} - {{ creneau.fin }}
+          </ion-label>
+          <ion-button 
+            slot="end" 
+            fill="clear" 
+            color="danger"
+            (click)="supprimerCreneau(jour, i)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+  
+        <ion-item *ngIf="disponibilites[jour]?.length === 0" class="empty-creneau">
+          <ion-text color="medium">Aucun créneau défini</ion-text>
+        </ion-item>
+      </ion-item-group>
+    </ion-list>
+  
+    <div class="save-section">
+      <ion-button 
+        expand="block" 
+        shape="round"
+        (click)="saveDisponibilites()">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        Sauvegarder les disponibilités
+      </ion-button>
+    </div>
+  </ion-content>

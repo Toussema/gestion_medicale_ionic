@@ -1,7 +1,18 @@
-/* Import d'une police moderne et lisible */
+/* Styles généraux */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
-/* Styles généraux */
+:root {
+  --ion-font-family: 'Roboto', sans-serif;
+  --ion-border-radius-small: 8px;
+  --ion-border-radius-medium: 12px;
+  --ion-border-radius-large: 16px;
+  --ion-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --ion-shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --ion-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.15);
+  --ion-scale-hover: scale(1.02);
+  --ion-transition-default: all 0.3s ease;
+}
+
 ion-content {
   --background: var(--ion-background-color);
   font-family: var(--ion-font-family);
@@ -11,56 +22,50 @@ ion-content {
 .header-toolbar {
   --background: var(--ion-gradient-primary);
   --color: var(--ion-color-primary-contrast);
-}
-
-.header-toolbar ion-title {
-  font-size: var(--ion-font-size-large);
-  font-weight: var(--ion-font-weight-medium);
-  letter-spacing: 0.5px;
-}
-
-.profile-button {
-  --color: var(--ion-color-primary-contrast);
-  font-size: var(--ion-font-size-medium);
-  font-weight: var(--ion-font-weight-regular);
-  text-transform: capitalize;
+  
+  ion-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
 }
 
 /* Section bienvenue */
-.welcome-text {
+.welcome-section {
   text-align: center;
   padding: 20px 0;
   background: var(--ion-gradient-primary);
   color: var(--ion-color-primary-contrast);
   border-radius: 0 0 var(--ion-border-radius-large) var(--ion-border-radius-large);
   margin-bottom: 20px;
-  animation: fadeIn 0.5s ease-in-out;
-}
-.welcome-text h2 {
-  margin: 0;
-  font-size: var(--ion-font-size-xlarge);
-  font-weight: var(--ion-font-weight-medium);
-  letter-spacing: 1px;
-}
-.welcome-text p {
-  margin: 5px 0 0;
-  font-size: var(--ion-font-size-medium);
-  font-weight: var(--ion-font-weight-light);
-  opacity: 0.9;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+  
+  p {
+    margin: 5px 0 0;
+    font-size: 1rem;
+    font-weight: 300;
+    opacity: 0.9;
+  }
 }
 
-/* Carte de filtres */
+/* Filtres */
 .filter-card {
   margin-bottom: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--ion-border-radius-medium);
+  box-shadow: var(--ion-shadow-light);
   
   ion-card-header {
-    cursor: pointer;
     padding: 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    cursor: pointer;
     
     ion-card-title {
       font-size: 1.1rem;
@@ -74,9 +79,8 @@ ion-content {
   }
 }
 
-/* Contenu des filtres */
 .filter-content {
-  padding-top: 0;
+  padding: 0 16px 16px;
   
   .filter-item {
     --padding-start: 0;
@@ -92,26 +96,24 @@ ion-content {
     
     ion-input, ion-select {
       background: var(--ion-color-light);
-      border-radius: 8px;
+      border-radius: var(--ion-border-radius-small);
       --padding-start: 12px;
       --padding-end: 12px;
-      --padding-top: 10px;
-      --padding-bottom: 10px;
+      font-size: 0.9rem;
     }
   }
 }
 
-/* Boutons de filtrage */
 .filter-buttons {
   display: flex;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: 16px;
   
   ion-button {
     margin: 0;
-    --border-radius: 8px;
     height: 48px;
     font-weight: 500;
+    --border-radius: var(--ion-border-radius-small);
     
     &:first-child {
       flex: 2;
@@ -126,146 +128,319 @@ ion-content {
 /* Liste des médecins */
 .medecin-list {
   padding: 0 10px;
-  margin-top: 20px;
-  animation: fadeIn 0.5s ease-in-out;
 }
 
 .medecin-card {
-  --background: var(--ion-card-background);
+  --background: white;
   border-radius: var(--ion-border-radius-medium);
-  margin-bottom: 20px;
-  box-shadow: var(--ion-shadow-medium);
-  padding: 15px;
+  margin-bottom: 16px;
+  box-shadow: var(--ion-shadow-light);
   transition: var(--ion-transition-default);
-}
-.medecin-card:hover {
-  transform: var(--ion-scale-hover);
-  box-shadow: var(--ion-shadow-hover);
+  
+  &:hover {
+    transform: var(--ion-scale-hover);
+    box-shadow: var(--ion-shadow-hover);
+  }
 }
 
 .medecin-content {
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
 }
 
-.medecin-details {
-  flex: 1;
-  padding-right: 0;
-}
-
-/* En-tête */
 .medecin-header {
-  margin-bottom: 15px;
-}
-.medecin-header h2 {
-  color: var(--ion-color-primary);
-  font-size: var(--ion-font-size-xlarge);
-  font-weight: var(--ion-font-weight-medium);
-  margin: 0;
-}
-.medecin-header .specialite {
-  color: var(--ion-text-muted);
-  font-size: var(--ion-font-size-medium);
-  font-weight: var(--ion-font-weight-regular);
+  margin-bottom: 12px;
+  
+  h2 {
+    display: flex;
+    align-items: center;
+    font-size: 1.2rem;
+    color: var(--ion-color-primary);
+    margin: 0;
+    
+    ion-icon {
+      margin-right: 8px;
+    }
+  }
+  
+  .specialite {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+    margin-top: 4px;
+    font-weight: 500;
+  }
 }
 
-/* Informations générales */
 .medecin-info {
-  margin-bottom: 20px;
-}
-.medecin-info .info-item {
-  display: flex;
-  align-items: center;
-  margin: 10px 0;
-  color: var(--ion-text-color);
-  font-size: var(--ion-font-size-medium);
-  font-weight: var(--ion-font-weight-regular);
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.medecin-info .info-item ion-icon {
-  margin-right: 10px;
-  color: var(--ion-color-primary);
-  font-size: var(--ion-font-size-large);
-}
-.medecin-info .info-item span {
-  font-weight: var(--ion-font-weight-medium);
-  color: var(--ion-text-color);
-  min-width: 90px;
+  background: var(--ion-color-light);
+  border-radius: var(--ion-border-radius-small);
+  padding: 12px;
+  
+  .info-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    
+    ion-icon {
+      margin-right: 8px;
+      color: var(--ion-color-primary);
+      min-width: 20px;
+    }
+    
+    span {
+      margin-right: 6px;
+      font-weight: 500;
+      min-width: 80px;
+    }
+    
+    strong {
+      color: var(--ion-color-primary);
+    }
+    
+    &.available {
+      color: var(--ion-text-color);
+    }
+  }
 }
 
-/* Section des disponibilités */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  
+  ion-button {
+    --border-radius: 20px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    height: 36px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+/* Section disponibilités améliorée */
 .dispo-section {
-  margin-top: 10px;
-}
-.dispo-section h3 {
-  color: var(--ion-color-primary);
-  font-size: var(--ion-font-size-large);
-  font-weight: var(--ion-font-weight-medium);
-  margin: 0 0 10px 0;
-  border-bottom: 1px solid var(--ion-border-color);
-  padding-bottom: 5px;
+  border-top: 1px solid var(--ion-color-light-shade);
+  padding-top: 12px;
+  position: relative;
+  
+  h3 {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: var(--ion-color-primary);
+    margin: 0 0 12px 0;
+    
+    ion-icon {
+      margin-right: 8px;
+    }
+  }
 }
 
-.dispo-list {
-  padding: 0;
-}
-
-.dispo-item {
-  --background: transparent;
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  margin: 8px 0;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 5px;
+.dispo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
 }
 
 .dispo-day {
-  font-weight: bold;
-  text-transform: capitalize;
-  color: var(--ion-color-primary);
-  min-width: 90px;
-  font-size: var(--ion-font-size-medium);
+  position: relative;
+  background: white;
+  border-radius: var(--ion-border-radius-small);
+  padding: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 1;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  &.active {
+    background: var(--ion-color-primary);
+    color: white;
+    
+    .day-name, .time-slot, .no-slots {
+      color: white;
+    }
+  }
+  
+  .day-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--ion-color-primary);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  
+  .day-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .time-slot {
+    background: var(--ion-color-light);
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 0.8rem;
+    text-align: center;
+    color: var(--ion-color-primary-shade);
+  }
+  
+  .no-slots {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+    text-align: center;
+    font-style: italic;
+  }
 }
 
-.dispo-time, .creneau {
-  color: var(--ion-text-muted);
-  font-weight: var(--ion-font-weight-regular);
-  font-size: var(--ion-font-size-small);
+/* Overlay et détails des jours */
+.day-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 10;
 }
 
-/* Bouton RDV */
+.day-details {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  background: white;
+  border-radius: var(--ion-border-radius-medium);
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 11;
+  animation: fadeInUp 0.3s ease-out;
+  
+  .day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+    padding-bottom: 8px;
+    
+    h4 {
+      margin: 0;
+      color: var(--ion-color-primary);
+      font-size: 1.1rem;
+    }
+  }
+  
+  .slot-list {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  .time-slot-detail {
+    padding: 12px;
+    margin-bottom: 8px;
+    background: var(--ion-color-light);
+    border-radius: var(--ion-border-radius-small);
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  .no-slots {
+    text-align: center;
+    color: var(--ion-color-primary);
+    font-style: italic;
+    padding: 16px 0;
+  }
+}
+
+/* Boutons spécifiques */
 .rdv-button {
   --background: var(--ion-color-primary);
-  --border-radius: var(--ion-border-radius-small);
-  --padding-start: 20px;
-  --padding-end: 20px;
   --color: var(--ion-color-primary-contrast);
-  font-size: var(--ion-font-size-medium);
-  font-weight: var(--ion-font-weight-bold);
+  --border-radius: var(--ion-border-radius-small);
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   height: 40px;
-  width: 100%;
-  max-width: 200px;
-  margin: 15px auto 0;
-  display: block;
-  animation: pulse 2s infinite;
   box-shadow: var(--ion-shadow-light);
   transition: var(--ion-transition-default);
-}
-.rdv-button:hover {
-  --background: var(--ion-color-primary-shade);
-  box-shadow: var(--ion-shadow-hover);
-  transform: var(--ion-scale-hover);
+  
+  &:hover {
+    --background: var(--ion-color-primary-shade);
+    box-shadow: var(--ion-shadow-hover);
+  }
 }
 
-/* Responsive (desktop) */
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Responsive */
 @media (min-width: 768px) {
-  .medecin-content {
-    flex-direction: column;
+  .medecin-list {
+    padding: 0 20px;
+  }
+  
+  .filter-content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  
+  .filter-buttons {
+    grid-column: 1 / -1;
+  }
+  
+  .dispo-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .day-details {
+    width: 70%;
+  }
+
+  .show-slots {
+    font-size: 0.8rem;
+    color: var(--ion-color-primary);
+    text-align: center;
+    font-weight: 500;
+    display: block;
+    margin-top: 4px;
+  }
+
+  .dispo-day.active .show-slots {
+    color: white;
   }
 }

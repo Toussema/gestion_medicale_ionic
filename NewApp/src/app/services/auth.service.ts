@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://127.0.0.1:5000'; // 🚀 Backend Flask
+  private apiUrl = 'https://0229-41-225-35-16.ngrok-free.app'; // 🚀 Backend Flask
 
   // BehaviorSubject pour gérer l'état de connexion et les informations de l'utilisateur
   private isLoggedInSubject = new BehaviorSubject<boolean>(this.isLoggedIn());

@@ -19,9 +19,16 @@ export class HomePage implements OnInit {
   validDays = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
   filters = {
     specialite: '',
-    adresse: '',
+    gouvernorat: '',
+    ville: '',
     term: ''
   };
+  specialites: string[] = [];
+  gouvernorats: string[] = [];
+  villes: string[] = [];
+  showFilters = false;
+  selectedDay: string | null = null;
+
 
   constructor(
     private router: Router,
@@ -39,6 +46,7 @@ export class HomePage implements OnInit {
       this.userRole = user.role || '';
     }
     this.loadMedecins();
+    this.loadFilterOptions();
   }
 
   ionViewWillEnter() {
@@ -60,36 +68,59 @@ export class HomePage implements OnInit {
       next: (data: any[]) => {
         this.allMedecins = data.map(medecin => ({
           ...medecin,
-          showDisponibilites: false
+          showDisponibilites: false,
+          disponibilites: medecin.disponibilites || {}
         }));
         this.medecins = [...this.allMedecins];
       },
-      error: (err) => console.error('Erreur lors du chargement des médecins:', err)
+      error: (err) => {
+        console.error('Erreur lors du chargement des médecins:', err);
+        this.showAlert('Erreur', 'Impossible de charger la liste des médecins.');
+      }
     });
   }
-  showFilters = false;
+  viewMedecinDetails(medecinId: string) {
+    this.router.navigate(['/medecin-detail', medecinId]);
+  }
+
+  loadFilterOptions() {
+    this.rdvService.getSpecialites().subscribe({
+      next: (data) => this.specialites = data,
+      error: (err) => console.error('Erreur lors du chargement des spécialités:', err)
+    });
+    this.rdvService.getGouvernorats().subscribe({
+      next: (data) => this.gouvernorats = data,
+      error: (err) => console.error('Erreur lors du chargement des gouvernorats:', err)
+    });
+    this.rdvService.getVilles().subscribe({
+      next: (data) => this.villes = data,
+      error: (err) => console.error('Erreur lors du chargement des villes:', err)
+    });
+  }
+
   toggleFilters() {
     this.showFilters = !this.showFilters;
   }
+
   filterMedecins() {
     const params = {
       specialite: this.filters.specialite.trim(),
-      adresse: this.filters.adresse.trim(),
+      gouvernorat: this.filters.gouvernorat.trim(),
+      ville: this.filters.ville.trim(),
       term: this.filters.term.trim()
     };
 
-    // Si aucun filtre n'est rempli, afficher tous les médecins
-    if (!params.specialite && !params.adresse && !params.term) {
+    if (!params.specialite && !params.gouvernorat && !params.ville && !params.term) {
       this.medecins = [...this.allMedecins];
       return;
     }
 
-    // Appeler la route de recherche avec les paramètres
     this.rdvService.searchMedecins(params).subscribe({
       next: (data: any[]) => {
         this.medecins = data.map(medecin => ({
           ...medecin,
-          showDisponibilites: false
+          showDisponibilites: false,
+          disponibilites: medecin.disponibilites || {}
         }));
       },
       error: (err) => {
@@ -100,7 +131,7 @@ export class HomePage implements OnInit {
   }
 
   resetFilters() {
-    this.filters = { specialite: '', adresse: '', term: '' };
+    this.filters = { specialite: '', gouvernorat: '', ville: '', term: '' };
     this.medecins = [...this.allMedecins];
   }
 
@@ -168,9 +199,6 @@ export class HomePage implements OnInit {
             }
   
             const creneaux = medecin.disponibilites[selectedJour] || [];
-            console.log(`Créneaux bruts pour ${selectedJour}:`, creneaux);
-  
-            // Filtrer les créneaux valides
             const creneauxValides = creneaux.filter(
               (creneau: any) => creneau.debut && creneau.fin && /^\d{1,2}:\d{2}$/.test(creneau.debut) && /^\d{1,2}:\d{2}$/.test(creneau.fin)
             );
@@ -187,23 +215,17 @@ export class HomePage implements OnInit {
   
             const creneauAlert = await this.alertCtrl.create({
               header: `Créneaux pour ${selectedJour.charAt(0).toUpperCase() + selectedJour.slice(1)}`,
-              inputs: creneauxValides.map((creneau: any, index: number) => {
-                const value = `${creneau.debut}|${creneau.fin}`; // Utiliser '|' comme séparateur
-                console.log(`Créneau affiché: ${creneau.debut} - ${creneau.fin}, value: ${value}`);
-                return {
-                  name: 'creneau',
-                  type: 'radio',
-                  label: `${creneau.debut} - ${creneau.fin}`,
-                  value: value
-                };
-              }),
+              inputs: creneauxValides.map((creneau: any) => ({
+                name: 'creneau',
+                type: 'radio',
+                label: `${creneau.debut} - ${creneau.fin}`,
+                value: `${creneau.debut}|${creneau.fin}`
+              })),
               buttons: [
                 { text: 'Annuler', role: 'cancel' },
                 {
                   text: 'Confirmer',
                   handler: async (selectedCreneau: string) => {
-                    console.log('SelectedCreneau:', selectedCreneau);
-  
                     if (!selectedCreneau) {
                       const errorAlert = await this.alertCtrl.create({
                         header: 'Erreur',
@@ -214,45 +236,13 @@ export class HomePage implements OnInit {
                       return false;
                     }
   
-                    // Valider et normaliser les horaires
-                    const times = selectedCreneau.split('|'); // Diviser sur '|'
-                    if (times.length !== 2) {
-                      console.error('Invalid times split:', times);
-                      const errorAlert = await this.alertCtrl.create({
-                        header: 'Erreur',
-                        message: 'Créneau invalide sélectionné.',
-                        buttons: ['OK']
-                      });
-                      await errorAlert.present();
-                      return false;
-                    }
-  
-                    const [debutRaw, finRaw] = times;
-                    const debutMatch = debutRaw.match(/^(\d{1,2}):(\d{2})$/);
-                    const finMatch = finRaw.match(/^(\d{1,2}):(\d{2})$/);
-  
-                    if (!debutMatch || !finMatch) {
-                      console.error('Regex failed - debutRaw:', debutRaw, 'finRaw:', finRaw);
-                      const errorAlert = await this.alertCtrl.create({
-                        header: 'Erreur',
-                        message: 'Format horaire invalide.',
-                        buttons: ['OK']
-                      });
-                      await errorAlert.present();
-                      return false;
-                    }
-  
-                    const debut = `${parseInt(debutMatch[1]).toString().padStart(2, '0')}:${debutMatch[2]}`;
-                    const fin = `${parseInt(finMatch[1]).toString().padStart(2, '0')}:${finMatch[2]}`;
-  
+                    const [debut, fin] = selectedCreneau.split('|');
                     const rdv = {
                       medecinId: medecinId,
                       jour: selectedJour.toLowerCase(),
-                      debut: debut,
-                      fin: fin
+                      debut,
+                      fin
                     };
-  
-                    console.log('Envoi de la requête rendez-vous:', rdv);
   
                     this.rdvService.prendreRendezVous(rdv).subscribe({
                       next: async () => {
@@ -299,5 +289,13 @@ export class HomePage implements OnInit {
 
   goToPage(route: string) {
     this.router.navigate([route]);
+  }
+
+  toggleDaySelection(jour: string) {
+    if (this.selectedDay === jour) {
+      this.selectedDay = null;
+    } else {
+      this.selectedDay = jour;
+    }
   }
 }

@@ -55,6 +55,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/notifications-page/notifications-page.module').then( m => m.NotificationsPagePageModule),
     canActivate: [AuthGuard], // Appliquer le gardien
   },
+  {
+    path: 'medecin-detail/:id',
+    loadChildren: () => import('./pages/medecin-detail/medecin-detail.module').then( m => m.MedecinDetailPageModule)
+  },
 ];
 
 @NgModule({

@@ -1,39 +1,101 @@
 <ion-header>
-  <ion-toolbar>
+    <ion-toolbar color="primary">
       <ion-title>Mes Rendez-vous</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content class="ion-padding">
     <div class="welcome-text">
-        <h2>📅 Mes Rendez-vous</h2>
+      <h2>📅 Mes Rendez-vous</h2>
+      <p class="subtitle">{{ rendezVous.length }} rendez-vous programmés</p>
     </div>
-    <ion-list>
-      <!-- Conteneur pour boucler sur les rendez-vous -->
+  
+    <ion-list class="rdv-list">
       <ng-container *ngFor="let rdv of rendezVous">
-          <!-- Affichage pour les patients -->
-          <ion-item *ngIf="userRole === 'patient'">
-              <ion-label>
-                  <h2>{{ rdv.medecinName }} ({{ rdv.medecinSpecialite }})</h2>
-                  <p>Adresse: {{ rdv.medecinAdresse }}</p>
-                  <p>{{ rdv.jour | titlecase }}: {{ rdv.debut }} - {{ rdv.fin }} ({{ rdv.statut }})</p>
-              </ion-label>
-              <ion-button slot="end" color="danger" (click)="annulerRdv(rdv._id)" *ngIf="rdv.statut !== 'annulé'">
-                  Annuler
-              </ion-button>
-          </ion-item>
+        <!-- Version Patient -->
+        <ion-item *ngIf="userRole === 'patient'" class="rdv-card" [class.cancelled]="rdv.statut === 'annulé'">
+          <div class="time-badge">
+            <span class="time">{{ rdv.debut }}</span>
+            <span class="duration">{{ rdv.debut }} - {{ rdv.fin }}</span>
+            <ion-badge [color]="rdv.statut === 'annulé' ? 'danger' : 'success'" class="status">
+                {{ rdv.statut }}
+            </ion-badge>
+          </div>
+  
+          <ion-label class="rdv-details">
+            <h2>
+              <ion-icon name="medkit-outline" color="primary"></ion-icon>
+              {{ rdv.medecinName }}
+            </h2>
+            
+            <p class="specialite">
+              <ion-icon name="ribbon-outline" slot="start"></ion-icon>
+              {{ rdv.medecinSpecialite }}
+            </p>
+            
+            <p class="info-line">
+              <ion-icon name="calendar-outline" slot="start"></ion-icon>
+              {{ rdv.jour | titlecase }}
+            </p>
+            
+            <p class="info-line">
+              <ion-icon name="location-outline" slot="start"></ion-icon>
+              {{ rdv.medecinAdresse }}
+            </p>
+          </ion-label>
+  
+          <ion-button 
+            *ngIf="rdv.statut !== 'annulé'"
+            slot="end" 
+            color="danger" 
+            size="small"
+            (click)="annulerRdv(rdv._id)">
+            <ion-icon name="close-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+  
+        <!-- Version Médecin -->
+        <ion-item *ngIf="userRole === 'medecin'" class="rdv-card" [class.cancelled]="rdv.statut === 'annulé'">
+          <div class="time-badge">
+            <span class="time">{{ rdv.debut }}</span>
+            <span class="duration">{{ rdv.debut }} - {{ rdv.fin }}</span>
+            <ion-badge [color]="rdv.statut === 'annulé' ? 'danger' : 'success'" class="status">
+                {{ rdv.statut }}
+            </ion-badge>
+          </div>
+  
+          <ion-label class="rdv-details">
+            <h2>
+              <ion-icon name="person-outline" color="primary"></ion-icon>
+              {{ rdv.patientName }}
 
-          <!-- Affichage pour les médecins -->
-          <ion-item *ngIf="userRole === 'medecin'">
-              <ion-label>
-                  <h2>{{ rdv.patientName }}</h2>
-                  <p>Email: {{ rdv.patientEmail }}</p>
-                  <p>{{ rdv.jour | titlecase }}: {{ rdv.debut }} - {{ rdv.fin }} ({{ rdv.statut }})</p>
-              </ion-label>
-              <ion-button slot="end" color="danger" (click)="annulerRdv(rdv._id)" *ngIf="rdv.statut !== 'annulé'">
-                  Annuler
-              </ion-button>
-          </ion-item>
+            </h2>
+            
+            <p class="info-line">
+              <ion-icon name="mail-outline" slot="start"></ion-icon>
+              {{ rdv.patientEmail }}
+            </p>
+            
+            <p class="info-line">
+              <ion-icon name="calendar-outline" slot="start"></ion-icon>
+              {{ rdv.jour | titlecase }}
+            </p>
+          </ion-label>
+  
+          <ion-button 
+            *ngIf="rdv.statut !== 'annulé'"
+            slot="end" 
+            color="danger" 
+            size="small"
+            (click)="annulerRdv(rdv._id)">
+            <ion-icon name="close-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
       </ng-container>
-  </ion-list>
-</ion-content>
+  
+      <div *ngIf="rendezVous.length === 0" class="empty-state">
+        <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
+        <p>Aucun rendez-vous programmé</p>
+      </div>
+    </ion-list>
+  </ion-content>
