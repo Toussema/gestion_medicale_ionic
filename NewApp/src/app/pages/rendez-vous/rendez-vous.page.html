@@ -12,6 +12,7 @@
   
     <ion-list class="rdv-list">
       <ng-container *ngFor="let rdv of rendezVous">
+        <ion-button expand="block" (click)="exportToICal()">Exporter en iCal</ion-button>
         <!-- Version Patient -->
         <ion-item *ngIf="userRole === 'patient'" class="rdv-card" [class.cancelled]="rdv.statut === 'annulé'">
           <div class="time-badge">

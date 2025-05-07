@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class RendezVousService {
-    private apiUrl = 'https://0229-41-225-35-16.ngrok-free.app';
+    private apiUrl = 'http://127.0.0.1:5000';
 
     constructor(private http: HttpClient, private authService: AuthService) {}
 

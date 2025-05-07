@@ -60,6 +60,10 @@
         <p *ngIf="doc.remarques">📝 Remarques : {{ doc.remarques }}</p>
       </ion-label>
 
+      <ion-button fill="clear" color="primary" slot="end" (click)="previewDocument(doc.id)" [disabled]="isLoadingPreview">
+        <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+      </ion-button>
+
       <ion-button fill="clear" color="primary" slot="end" (click)="downloadDocument(doc.id)">
         <ion-icon slot="icon-only" name="download-outline"></ion-icon>
       </ion-button>
@@ -70,4 +74,24 @@
     </ion-item>
   </ion-list>
 
+  <!-- Modal de prévisualisation -->
+  <ion-modal *ngIf="previewUrl" (ionModalDidDismiss)="closePreview()">
+    <ng-template>
+      <ion-content>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Prévisualisation</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="closePreview()">Fermer</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-progress-bar type="indeterminate" *ngIf="isLoadingPreview"></ion-progress-bar>
+        <div style="width: 100%; height: 100%;">
+          <iframe *ngIf="previewUrl && previewType === 'pdf'" [src]="previewUrl" style="width: 100%; height: 100%;"></iframe>
+          <img *ngIf="previewUrl && previewType === 'image'" [src]="previewUrl" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

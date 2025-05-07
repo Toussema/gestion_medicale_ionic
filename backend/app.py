@@ -483,6 +483,9 @@ def download_document(doc_id):
     user_id = get_jwt_identity()
     claims = get_jwt()
 
+    # Vérifier si la prévisualisation est demandée
+    is_preview = request.args.get('preview', default='false', type=str).lower() == 'true'
+
     with get_sqlite_connection() as conn:
         cursor = conn.execute('SELECT fichier, titre, patient_id, medecin_id, statut FROM documents WHERE id = ?', (doc_id,))
         doc = cursor.fetchone()
@@ -491,7 +494,7 @@ def download_document(doc_id):
         if doc['patient_id'] != user_id and doc['medecin_id'] != user_id:
             return jsonify({'message': 'Accès refusé'}), 403
         
-        if claims["role"] == "medecin" and doc["statut"] == "Non consulté":
+        if claims["role"] == "medecin" and doc["statut"] == "Non consulté" and not is_preview:
             patient = patients.find_one({"_id": ObjectId(doc["patient_id"])})
             if patient:
                 create_notification(doc["patient_id"], 
@@ -500,10 +503,22 @@ def download_document(doc_id):
             conn.execute('UPDATE documents SET statut = ? WHERE id = ?', ('Consulté', doc_id))
             conn.commit()
 
+        # Déterminer le type MIME basé sur l'extension du titre
+        titre = doc['titre'].lower()
+        if titre.endswith('.pdf'):
+            mime_type = 'application/pdf'
+        elif titre.endswith('.jpg') or titre.endswith('.jpeg'):
+            mime_type = 'image/jpeg'
+        elif titre.endswith('.png'):
+            mime_type = 'image/png'
+        else:
+            mime_type = 'application/octet-stream'  # Fallback
+
         return send_file(
             io.BytesIO(doc['fichier']),
+            mimetype=mime_type,
             download_name=doc['titre'],
-            as_attachment=True
+            as_attachment=not is_preview  # Désactiver as_attachment pour la prévisualisation
         )
 
 @app.route('/documents/<int:doc_id>/annotate', methods=['PUT'])

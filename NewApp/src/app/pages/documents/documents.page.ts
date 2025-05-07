@@ -3,9 +3,7 @@ import { AuthService } from '../../services/auth.service';
 import { DocumentsService } from '../../services/documents.service';
 import { AlertController } from '@ionic/angular';
 import { saveAs } from 'file-saver';
-import { IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-documents',
@@ -20,11 +18,15 @@ export class DocumentsPage implements OnInit {
   titre: string = '';
   selectedMedecinId: string = '';
   medecins: any[] = [];
+  previewUrl: SafeResourceUrl | null = null;
+  previewType: 'pdf' | 'image' | null = null;
+  isLoadingPreview: boolean = false;
 
   constructor(
     private authService: AuthService,
     private documentsService: DocumentsService,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
@@ -39,8 +41,14 @@ export class DocumentsPage implements OnInit {
       : this.documentsService.getMedecinDocuments();
 
     request.subscribe({
-      next: (data) => (this.documents = data),
-      error: (err) => console.error('Erreur chargement documents:', err),
+      next: (data) => {
+        this.documents = data;
+        console.log('Documents chargés:', data);
+      },
+      error: async (err) => {
+        console.error('Erreur chargement documents:', err);
+        await this.showAlert('Erreur', 'Impossible de charger les documents.');
+      },
     });
   }
 
@@ -62,12 +70,7 @@ export class DocumentsPage implements OnInit {
 
   async uploadDocument() {
     if (!this.selectedFile || !this.titre || !this.selectedMedecinId) {
-      const alert = await this.alertCtrl.create({
-        header: 'Erreur',
-        message: 'Veuillez remplir tous les champs.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      await this.showAlert('Erreur', 'Veuillez remplir tous les champs.');
       return;
     }
 
@@ -83,21 +86,11 @@ export class DocumentsPage implements OnInit {
         this.titre = '';
         this.selectedFile = null;
         this.selectedMedecinId = '';
-        const alert = await this.alertCtrl.create({
-          header: 'Succès',
-          message: 'Document envoyé avec succès.',
-          buttons: ['OK'],
-        });
-        await alert.present();
+        await this.showAlert('Succès', 'Document envoyé avec succès.');
       },
       error: async (err) => {
         console.error('Erreur envoi document:', err);
-        const alert = await this.alertCtrl.create({
-          header: 'Erreur',
-          message: 'Erreur lors de l’envoi du document.',
-          buttons: ['OK'],
-        });
-        await alert.present();
+        await this.showAlert('Erreur', 'Erreur lors de l’envoi du document.');
       },
     });
   }
@@ -108,7 +101,10 @@ export class DocumentsPage implements OnInit {
         const doc = this.documents.find(d => d.id === docId);
         saveAs(blob, doc.titre);
       },
-      error: (err) => console.error('Erreur téléchargement document:', err),
+      error: async (err) => {
+        console.error('Erreur téléchargement document:', err);
+        await this.showAlert('Erreur', 'Impossible de télécharger le document.');
+      },
     });
   }
 
@@ -123,11 +119,62 @@ export class DocumentsPage implements OnInit {
           handler: (data) => {
             this.documentsService.annotateDocument(doc.id, data.remarques).subscribe({
               next: () => this.loadDocuments(),
-              error: (err) => console.error('Erreur annotation document:', err),
+              error: async (err) => {
+                console.error('Erreur annotation document:', err);
+                await this.showAlert('Erreur', 'Impossible d’annoter le document.');
+              },
             });
           },
         },
       ],
+    });
+    await alert.present();
+  }
+
+  previewDocument(docId: number) {
+    console.log('Tentative de prévisualisation du document ID:', docId);
+    this.isLoadingPreview = true;
+    this.documentsService.downloadDocument(docId, true).subscribe({
+      next: (blob) => {
+        console.log('Blob reçu:', blob);
+        const url = window.URL.createObjectURL(blob);
+        if (blob.type === 'application/pdf') {
+          this.previewType = 'pdf';
+          this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+        } else if (blob.type.startsWith('image/')) {
+          this.previewType = 'image';
+          this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+        } else {
+          this.isLoadingPreview = false;
+          this.showAlert('Erreur', 'Type de fichier non supporté pour la prévisualisation.');
+          window.URL.revokeObjectURL(url);
+          return;
+        }
+        this.isLoadingPreview = false;
+        console.log('Preview URL généré:', url);
+      },
+      error: async (err) => {
+        console.error('Erreur prévisualisation document:', err);
+        this.isLoadingPreview = false;
+        await this.showAlert('Erreur', err.status === 403 ? 'Accès refusé' : 'Impossible de prévisualiser le document.');
+      },
+    });
+  }
+
+  closePreview() {
+    if (this.previewUrl) {
+      const url = (this.previewUrl as any).changingThisBreaksApplicationSecurity;
+      window.URL.revokeObjectURL(url);
+    }
+    this.previewUrl = null;
+    this.previewType = null;
+  }
+
+  async showAlert(header: string, message: string) {
+    const alert = await this.alertCtrl.create({
+      header,
+      message,
+      buttons: ['OK'],
     });
     await alert.present();
   }

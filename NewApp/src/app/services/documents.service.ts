@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class DocumentsService {
-  private apiUrl = 'https://0229-41-225-35-16.ngrok-free.app';
+  private apiUrl = 'http://127.0.0.1:5000';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -25,9 +25,14 @@ export class DocumentsService {
     return this.http.get<any[]>(`${this.apiUrl}/documents/medecin`, { headers: this.getHeaders() });
   }
 
-  downloadDocument(docId: number): Observable<Blob> {
+  downloadDocument(docId: number, preview: boolean = false): Observable<Blob> {
+    let params = new HttpParams();
+    if (preview) {
+      params = params.set('preview', 'true');
+    }
     return this.http.get(`${this.apiUrl}/documents/${docId}/download`, {
       headers: this.getHeaders(),
+      params: params,
       responseType: 'blob'
     });
   }
